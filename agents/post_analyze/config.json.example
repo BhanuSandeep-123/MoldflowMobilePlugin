@@ -1,0 +1,11 @@
+{
+  "existing_plugin_path": "C:\\Users\\UnoTEAM-0144\\Documents\\MoldflowSynergyPlugin\\MoldflowSynergyPlugin",
+  "poll_interval_seconds": 3.0,
+  "startup_baseline": true,
+  "inspection_enabled": true,
+  "inspection_status": "INSPECTION",
+  "inspection_timeout_seconds": 45,
+  "only_local_jobs": true,
+  "log_file": "standalone_agent.log",
+  "analysis_started_status": "STARTED"
+}

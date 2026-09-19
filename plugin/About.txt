@@ -1,0 +1,91 @@
+**Date:** 15-07-2026
+
+### Moldflow Automation – Daily Work Update
+
+* Worked on automating the **Project Creation** workflow in Moldflow Synergy 2027 by displaying a prompt immediately after application launch, allowing users to create and save a new project with a custom project name.
+
+* Developed the **Model Import** workflow to automatically prompt users for model import after project creation, supporting both native CAD files and neutral formats such as **.SAT**.
+
+* Implemented automation to automatically set the **Import Type** to **3D**, eliminating the need for users to manually configure the import settings.
+
+* Worked on automating the **Analysis Sequence Selection** process by launching the Analysis Selection dialog after model import, allowing users to select the required analysis sequence (e.g., **Fill + Pack**).
+
+* Developed the **Material Selection** workflow to automatically open the Material Selection dialog and guide users through selecting the appropriate material.
+
+* Implemented logic to automatically detect whether the selected material is **fiber-filled** or **non-fiber-filled**, enabling or disabling the **Fiber Fill** option accordingly without user intervention.
+
+* Worked on automating the **Process Parameters** workflow by triggering the Process Parameters dialog after material selection and providing users with the option to either manually configure the process parameters or proceed with the default automatic settings.
+
+### Overall Progress
+
+Focused on designing and implementing an end-to-end automation workflow in Moldflow Synergy 2027 to streamline project creation, model import, analysis setup, material configuration, and process parameter selection, reducing manual steps and improving the overall user experience.
+
+**Date:** 16-07-2026
+Implemented upto the last with an error.
+
+**Date:** 18-07-2026
+Implemented upto the analysis part and show results.
+
+**Date:** 20-07-2026
+Completed upto the analysis and show the correct results and i compare them to manual results and also export the results into a word document.
+
+**Date:** 21-07-2026
+Export the results with parameters corresponding to screenshots and their information in ppt. Also Checked the automation in different windows and still make a conclusion on same instance with different studies.
+
+**Date:** 22-07-2026
+* Fixed the workflow between the **Import Part** and **Automation Workflow** to display each step sequentially without overlapping. Also merged the **"Do you want to proceed with automation?"** prompt into the **Automation Complete** UI.
+* Implemented the **Material Selection** flow: **Yes** opens the Material Selection dialog, **No** proceeds with default settings. Applied the same logic to the **Process Settings** step.
+* Fixed the **Process Settings** temperature values to update correctly based on the selected analysis sequence.
+* Enhanced **Mesh Diagnostics** by displaying diagnostics before analysis starts. Added error handling to detect meshing failures and provided a recovery option to retry using **50% mesh refinement** for the current condition.
+
+**Date:** 23-07-2026
+* Fixing the error report after closing the moldflow 
+*Import native dialog should open before it shows imported successfully message and also fix it opened in isometric view"
+
+**Date:** 24-07-2026,27-07-2026
+*The report should process each selected result sequentially. For each parameter (e.g., Fill Time), open the result, ensure the model is properly fitted in the viewport without cropping or overlap, capture one screenshot, and if Animate is selected, export the corresponding animation video before proceeding to the next result. Finally, include all screenshots and animation videos in the PowerPoint report."
+
+**Date:** 28-07-2026
+*In the Automation script runs is how's no issues its ok if it any issue then give two option to user like go back to fusion to fix the error in the model otherwise or choose translate surface 
+
+**Date:** 29-07-2026
+*Build the complete correct workflow of the tool
+
+**Date:** 31-07-2026
+*Fixed the issue of working of the plugin for multiple mold flow windows parallelly.
+
+**Date:** 03,04-08-2026
+*Use the ai assistant for result summary extraction it works when user at least one time open the ai assistant manually in synergy.
+
+**Date:** 05-08-2026
+* Now, whenever Moldflow Synergy starts, the AI Assistant opens automatically and closes after a few seconds, allowing the workflow to continue seamlessly. This also ensures the AI-generated results summary is available at the end of the analysis.
+
+**Date:** 20,21-08-2026
+* Currently working on the Job Manager Automation in Moldflow Synergy 2027, working on the gate location in dual domain suggested by the Madhav sir spoken procedure.
+
+**Date:** 24-08-2026
+*  working on the moldflow job manager analysis status should shown in PowerShell terminal"
+
+**Date:** 25,26,27-08-2026
+*working on the moldflow job manager analysis status should shown in mobile app in visual studio"
+
+**Date:** 28,29-08-2026
+*working on the mold flow job manager analysis status should shown in mobile app in visual studio and link to the cloud database  prostredgesql"
+
+**Date:** 31-08-2026
+* Implemented the mobile app in mobile using developed APK file now both live status of process and noticfication to mobile phone comes after completion.
+
+**Date:** 01-09-2026
+* Enhancements in the developed mobile app like Remove from list,cancel options are added the notifications for start,cancel,completed and also add a dashboard consists of sections like Active,Completed,Cancel,Overall integrating  with calendar"
+
+**Date:** 02-09-2026
+*Deployed the moldflow mobile automation tool in the render server and used superbase cloud.
+
+**Date:** 08,09,10-09-2026
+*working on the moldflow tool to trigger directly mobile phone even the process of analyze is manual",completely refactored the moldflowplugin and mobile app code into  a single folder means architectural and understanding approach,fixed the notification messages in manual simulation and also  implemented cancel the analysis shopuld directly reflected on the moldflow scm job manager.
+
+**Date:** 11-09-2026
+*Fixed the scm user correct information in mobile app and also applied vice versa for scm job manager means whenever user clicks cancel in scm job manager that also should cancelled in moldflow mobile app.
+
+**Date:** 18-09-2026
+*Working on exploration of network license server on multiple systems how to connect with mobile dashboard for different user with same network license. Currently integrating license section in the mobile App.

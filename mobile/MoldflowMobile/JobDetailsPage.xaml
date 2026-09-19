@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="MoldflowMobile.JobDetailsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Job Details"
+    BackgroundColor="{AppThemeBinding Light=#F7F8FC, Dark=#111318}">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="20,16,20,30"
+            Spacing="14">
+
+            <!-- =====================================================
+                 MAIN JOB CARD
+                 ===================================================== -->
+
+            <Border
+                Padding="16"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1E24}">
+
+                <VerticalStackLayout Spacing="7">
+
+                    <Label
+                        x:Name="JobNameLabel"
+                        Text="Job"
+                        FontSize="23"
+                        FontAttributes="Bold"
+                        LineBreakMode="TailTruncation" />
+
+                    <Label
+                        x:Name="JobTypeLabel"
+                        Text="Type:"
+                        FontSize="14"
+                        TextColor="Gray" />
+
+                    <Border
+                        HorizontalOptions="Start"
+                        Padding="10,4"
+                        StrokeShape="RoundRectangle 20"
+                        BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#252A40}"
+                        StrokeThickness="0">
+
+                        <Label
+                            x:Name="StatusLabel"
+                            Text="UNKNOWN"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="{AppThemeBinding Light=#3158D8, Dark=#A9BCFF}" />
+
+                    </Border>
+
+                    <!-- Cancel button — only shown for INPROGRESS/RUNNING jobs -->
+                    <Button
+                        x:Name="CancelButton"
+                        Text="Cancel Analysis"
+                        IsVisible="False"
+                        HeightRequest="44"
+                        CornerRadius="10"
+                        FontAttributes="Bold"
+                        BackgroundColor="#DC2626"
+                        TextColor="White"
+                        Margin="0,8,0,0"
+                        Clicked="OnCancelClicked" />
+
+                    <Label
+                        x:Name="CancelStatusLabel"
+                        IsVisible="False"
+                        FontSize="13"
+                        TextColor="#DC2626"
+                        HorizontalTextAlignment="Center"
+                        Margin="0,2,0,0" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- =====================================================
+                 PROGRESS
+                 ===================================================== -->
+
+            <Border
+                Padding="16"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1E24}">
+
+                <VerticalStackLayout Spacing="8">
+
+                    <Grid
+                        ColumnDefinitions="*,Auto">
+
+                        <Label
+                            Text="Progress"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+
+                        <Label
+                            Grid.Column="1"
+                            x:Name="PercentLabel"
+                            Text="0%"
+                            FontSize="17"
+                            FontAttributes="Bold" />
+
+                    </Grid>
+
+                    <ProgressBar
+                        x:Name="JobProgressBar"
+                        Progress="0"
+                        HeightRequest="8" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- =====================================================
+                 JOB INFORMATION
+                 ===================================================== -->
+
+            <Border
+                Padding="16"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1E24}">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="Job Information"
+                        FontSize="18"
+                        FontAttributes="Bold" />
+
+                    <Grid
+                        ColumnDefinitions="95,*"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                        RowSpacing="8"
+                        ColumnSpacing="8">
+
+                        <Label
+                            Text="Job ID"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Column="1"
+                            x:Name="JobIdLabel"
+                            FontSize="13"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="1"
+                            Text="Started"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            x:Name="StartedLabel"
+                            FontSize="13" />
+
+                        <Label
+                            Grid.Row="2"
+                            Text="Finished"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            x:Name="FinishedLabel"
+                            FontSize="13" />
+
+                        <Label
+                            Grid.Row="3"
+                            Text="Machine"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            x:Name="MachineLabel"
+                            FontSize="13"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="4"
+                            Text="Updates"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            x:Name="UpdatesLabel"
+                            FontSize="13" />
+
+                    </Grid>
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- =====================================================
+                 SIMULATION COMPUTE MANAGER
+                 ===================================================== -->
+
+            <Border
+                x:Name="ScmCard"
+                Padding="16"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1E24}">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="Simulation Compute Manager"
+                        FontSize="18"
+                        FontAttributes="Bold" />
+
+                    <Grid
+                        ColumnDefinitions="105,*"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                        RowSpacing="8"
+                        ColumnSpacing="8">
+
+                        <Label
+                            Text="Source"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Column="1"
+                            x:Name="ComputeSourceLabel"
+                            FontSize="13"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="1"
+                            Text="SCM Type"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            x:Name="ScmTypeLabel"
+                            FontSize="13"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="2"
+                            Text="SCM User"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            x:Name="ScmUserLabel"
+                            FontSize="13"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="3"
+                            Text="Worker"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            x:Name="WorkerLabel"
+                            FontSize="13"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="4"
+                            Text="SCM Job ID"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            x:Name="ScmJobIdLabel"
+                            FontSize="12"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Grid.Row="5"
+                            Text="Parent Job"
+                            FontSize="13"
+                            TextColor="Gray" />
+
+                        <Label
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            x:Name="ParentJobLabel"
+                            FontSize="12"
+                            LineBreakMode="TailTruncation" />
+
+                    </Grid>
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- =====================================================
+                 ERROR
+                 ===================================================== -->
+
+            <Border
+                x:Name="ErrorCard"
+                IsVisible="False"
+                Padding="16"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light=#FFF5F5, Dark=#2A1B1B}">
+
+                <VerticalStackLayout Spacing="7">
+
+                    <Label
+                        Text="Error"
+                        FontSize="18"
+                        FontAttributes="Bold" />
+
+                    <Label
+                        x:Name="ErrorLabel"
+                        FontSize="14" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- =====================================================
+                 ACTIVITY HEADER
+                 ===================================================== -->
+
+            <Grid
+                ColumnDefinitions="*,Auto"
+                Margin="0,4,0,0">
+
+                <Label
+                    Text="Activity"
+                    FontSize="20"
+                    FontAttributes="Bold" />
+
+                <Label
+                    Grid.Column="1"
+                    x:Name="ActivityCountLabel"
+                    Text=""
+                    FontSize="12"
+                    TextColor="Gray"
+                    VerticalOptions="Center" />
+
+            </Grid>
+
+            <!-- =====================================================
+                 ACTIVITY ITEMS
+                 ===================================================== -->
+
+            <VerticalStackLayout
+                x:Name="ActivityLayout"
+                Spacing="8" />
+
+            <!-- =====================================================
+                 LOADING
+                 ===================================================== -->
+
+            <ActivityIndicator
+                x:Name="LoadingIndicator"
+                IsVisible="False"
+                IsRunning="False"
+                WidthRequest="45"
+                HeightRequest="45"
+                HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

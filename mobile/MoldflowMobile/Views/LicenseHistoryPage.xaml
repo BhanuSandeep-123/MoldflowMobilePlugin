@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MoldflowMobile.Views.LicenseHistoryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MoldflowMobile"
+    xmlns:vm="clr-namespace:MoldflowMobile.ViewModels"
+    x:DataType="vm:LicenseHistoryViewModel"
+    Title="License History"
+    BackgroundColor="#F7F8FC">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- HEADER -->
+        <Grid Padding="20,16,20,8" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Spacing="2">
+                <Label
+                    Text="Audit Trail"
+                    FontSize="12"
+                    FontAttributes="Bold"
+                    CharacterSpacing="1"
+                    TextColor="#3157D5" />
+                <Label
+                    Text="License Event History"
+                    FontSize="22"
+                    FontAttributes="Bold"
+                    TextColor="#172033" />
+                <Label
+                    Text="{Binding TotalEvents, StringFormat='{0} total recorded event(s)'}"
+                    FontSize="12"
+                    TextColor="#697386" />
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="1"
+                Text="↻"
+                FontSize="20"
+                WidthRequest="42"
+                HeightRequest="42"
+                CornerRadius="21"
+                BackgroundColor="White"
+                TextColor="#3157D5"
+                Clicked="OnRefreshClicked" />
+        </Grid>
+
+        <!-- FILTER CHIPS HORIZONTAL SCROLL -->
+        <ScrollView
+            Grid.Row="1"
+            Orientation="Horizontal"
+            HorizontalScrollBarVisibility="Never"
+            Padding="16,0,16,10">
+            <HorizontalStackLayout Spacing="8">
+                <Button
+                    x:Name="FilterAllBtn"
+                    Text="All Events"
+                    FontSize="12"
+                    Padding="12,0"
+                    HeightRequest="34"
+                    CornerRadius="17"
+                    BackgroundColor="#3157D5"
+                    TextColor="White"
+                    Clicked="OnFilterAllClicked" />
+
+                <Button
+                    x:Name="FilterCheckoutBtn"
+                    Text="Checkouts"
+                    FontSize="12"
+                    Padding="12,0"
+                    HeightRequest="34"
+                    CornerRadius="17"
+                    BackgroundColor="#E9ECF7"
+                    TextColor="#3157D5"
+                    Clicked="OnFilterCheckoutClicked" />
+
+                <Button
+                    x:Name="FilterReturnBtn"
+                    Text="Returns"
+                    FontSize="12"
+                    Padding="12,0"
+                    HeightRequest="34"
+                    CornerRadius="17"
+                    BackgroundColor="#E9ECF7"
+                    TextColor="#3157D5"
+                    Clicked="OnFilterReturnClicked" />
+
+                <Button
+                    x:Name="FilterExhaustedBtn"
+                    Text="Exhausted"
+                    FontSize="12"
+                    Padding="12,0"
+                    HeightRequest="34"
+                    CornerRadius="17"
+                    BackgroundColor="#E9ECF7"
+                    TextColor="#3157D5"
+                    Clicked="OnFilterExhaustedClicked" />
+
+                <Button
+                    x:Name="FilterServerDownBtn"
+                    Text="Server Down"
+                    FontSize="12"
+                    Padding="12,0"
+                    HeightRequest="34"
+                    CornerRadius="17"
+                    BackgroundColor="#E9ECF7"
+                    TextColor="#3157D5"
+                    Clicked="OnFilterServerDownClicked" />
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- EVENT LIST WITH PULL TO REFRESH -->
+        <RefreshView
+            Grid.Row="2"
+            IsRefreshing="{Binding IsRefreshing}"
+            Refreshing="OnRefreshViewRefreshing">
+
+            <ScrollView>
+
+                <VerticalStackLayout Padding="16,4,16,24" Spacing="10">
+
+                    <!-- EMPTY VIEW -->
+                    <Border
+                        IsVisible="{Binding IsEmpty}"
+                        Padding="28"
+                        BackgroundColor="White"
+                        Stroke="#E2E6EF"
+                        StrokeShape="RoundRectangle 14"
+                        Margin="0,20,0,0">
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label
+                                Text="No Events Found"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                HorizontalOptions="Center"
+                                TextColor="#172033" />
+                            <Label
+                                Text="No license history events match the selected criteria."
+                                FontSize="13"
+                                TextColor="#697386"
+                                HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- EVENTS COLLECTION -->
+                    <CollectionView
+                        ItemsSource="{Binding Events}"
+                        SelectionMode="None"
+                        IsVisible="{Binding HasEvents}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="local:LicenseEventItem">
+                                <Border
+                                    Margin="0,4"
+                                    Padding="14"
+                                    BackgroundColor="White"
+                                    Stroke="#E2E6EF"
+                                    StrokeShape="RoundRectangle 14">
+
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+
+                                        <!-- EVENT INDICATOR MARKER -->
+                                        <Border
+                                            WidthRequest="12"
+                                            HeightRequest="12"
+                                            StrokeShape="RoundRectangle 6"
+                                            BackgroundColor="#3157D5"
+                                            StrokeThickness="0"
+                                            VerticalOptions="Start"
+                                            Margin="0,4,0,0" />
+
+                                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Label
+                                                    Text="{Binding FriendlyTitle}"
+                                                    FontSize="15"
+                                                    FontAttributes="Bold"
+                                                    TextColor="#172033" />
+
+                                                <Border
+                                                    Grid.Column="1"
+                                                    Padding="6,2"
+                                                    BackgroundColor="#F1F5F9"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    StrokeThickness="0">
+                                                    <Label
+                                                        Text="{Binding EventType}"
+                                                        FontSize="10"
+                                                        FontAttributes="Bold"
+                                                        TextColor="#64748B" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Label
+                                                Text="{Binding Subtitle}"
+                                                FontSize="12"
+                                                TextColor="#697386" />
+
+                                            <Label
+                                                Text="{Binding FormattedTime}"
+                                                FontSize="11"
+                                                TextColor="#94A3B8" />
+                                        </VerticalStackLayout>
+
+                                    </Grid>
+
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- LOAD MORE BUTTON -->
+                    <Button
+                        Text="Load More Events"
+                        IsVisible="{Binding CanLoadMore}"
+                        HeightRequest="42"
+                        CornerRadius="10"
+                        BackgroundColor="#EEF2FF"
+                        TextColor="#3157D5"
+                        FontAttributes="Bold"
+                        Margin="0,8,0,0"
+                        Clicked="OnLoadMoreClicked" />
+
+                    <!-- ACTIVITY INDICATOR -->
+                    <ActivityIndicator
+                        IsVisible="{Binding IsBusy}"
+                        IsRunning="{Binding IsBusy}"
+                        HorizontalOptions="Center"
+                        Color="#3157D5"
+                        HeightRequest="40"
+                        WidthRequest="40" />
+
+                </VerticalStackLayout>
+
+            </ScrollView>
+
+        </RefreshView>
+
+    </Grid>
+
+</ContentPage>

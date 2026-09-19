@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>Auto-starts Moldflow Standalone Post-Analyze Agent at logon; single-instance protected via IgnoreNew.</Description>
+    <URI>\Moldflow Post-Analyze Agent</URI>
+  </RegistrationInfo>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-21-3774785028-464269352-2648343765-1001</UserId>
+      <LogonType>InteractiveToken</LogonType>
+    </Principal>
+  </Principals>
+  <Settings>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <IdleSettings>
+      <Duration>PT10M</Duration>
+      <WaitTimeout>PT1H</WaitTimeout>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>
+  </Settings>
+  <Triggers>
+    <LogonTrigger>
+      <UserId>LAPTOP-CA2QN87F\UnoTEAM-0144</UserId>
+    </LogonTrigger>
+  </Triggers>
+  <Actions Context="Author">
+    <Exec>
+      <Command>C:\Users\UnoTEAM-0144\Documents\MoldflowMobileSystem\plugin\.venv\Scripts\pythonw.exe</Command>
+      <Arguments>agent.py</Arguments>
+      <WorkingDirectory>C:\Users\UnoTEAM-0144\Documents\MoldflowStandaloneAgent_PostAnalyze_v1_4\MoldflowStandaloneAgent</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>

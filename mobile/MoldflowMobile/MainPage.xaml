@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="MoldflowMobile.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Login"
+    BackgroundColor="#F7F8FC">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="24"
+            VerticalOptions="Center">
+
+            <VerticalStackLayout
+                Spacing="6">
+
+                <Label
+                    Text="Uno"
+                    FontSize="40"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center"
+                    TextColor="#FC8F16" />
+
+                <Label
+                    Text="Monitor your Moldflow jobs"
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    TextColor="#697386" />
+
+            </VerticalStackLayout>
+
+            <Border
+                Padding="22"
+                BackgroundColor="White"
+                Stroke="#E2E6EF"
+                StrokeShape="RoundRectangle 18">
+
+                <VerticalStackLayout
+                    Spacing="18">
+
+                    <VerticalStackLayout Spacing="7">
+
+                        <Label
+                            Text="Server URL"
+                            FontAttributes="Bold"
+                            TextColor="#172033" />
+
+                        <Entry
+                            x:Name="ServerUrlEntry"
+                            Placeholder="https://moldflowplugin-mobile-app.onrender.com"
+                            Keyboard="Url"
+                            ClearButtonVisibility="WhileEditing" />
+
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="7">
+
+                        <Label
+                            Text="Email"
+                            FontAttributes="Bold"
+                            TextColor="#172033" />
+
+                        <Entry
+                            x:Name="EmailEntry"
+                            Placeholder="Enter email"
+                            Keyboard="Email"
+                            Text="dev@example.local"
+                            ClearButtonVisibility="WhileEditing" />
+
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="7">
+
+                        <Label
+                            Text="Password"
+                            FontAttributes="Bold"
+                            TextColor="#172033" />
+
+                        <Entry
+                            x:Name="PasswordEntry"
+                            Placeholder="Enter password"
+                            IsPassword="True"
+                            Text="MoldflowDev@2026!" />
+
+                    </VerticalStackLayout>
+
+                    <Button
+                        x:Name="LoginButton"
+                        Text="LOGIN"
+                        HeightRequest="54"
+                        CornerRadius="12"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FC8F16"
+                        TextColor="White"
+                        Clicked="OnLoginClicked" />
+
+                    <ActivityIndicator
+                        x:Name="LoadingIndicator"
+                        IsVisible="False"
+                        IsRunning="False"
+                        HorizontalOptions="Center" />
+
+                    <Label
+                        x:Name="StatusLabel"
+                        FontSize="14"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#697386" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

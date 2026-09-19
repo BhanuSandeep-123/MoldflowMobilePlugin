@@ -1,0 +1,12 @@
+{
+  "autodeskProduct": "Fusion360",
+  "type": "addin",
+  "id": "b3b2f6d0-6e0a-4b1a-9a3e-2f7c5c2a9d11",
+  "author": "MoldflowSynergyPlugin",
+  "description": {
+    "": "Best-effort auto-Validate/repair when a model is opened via Moldflow's 'Modify with Autodesk Fusion 360' round trip, then returns control to Moldflow automatically. UNSUPPORTED: relies on undocumented Fusion internals discovered at runtime; if it can't confirm it is in a Moldflow round trip it does nothing."
+  },
+  "version": "0.1.0",
+  "runOnStartup": true,
+  "supportedOS": "windows"
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "521903954224",
+    "project_id": "moldflow-mobile",
+    "storage_bucket": "moldflow-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:521903954224:android:26d08a9c1463192ddd10f5",
+        "android_client_info": {
+          "package_name": "com.companyname.moldflowmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnuEalc7l8Vx097Tv6QRBNftA59USpeJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,53 @@
+{
+  "monitor_version": "1.0.0",
+  "schema_version": "1.0",
+  "server": {
+    "hostname": "LAPTOP-CA2QN87F",
+    "port": 27000,
+    "target": "27000@LAPTOP-CA2QN87F"
+  },
+  "lmutil_path": "C:\\Autodesk\\Network License Manager\\lmutil.exe",
+  "query_timeout_seconds": 15,
+  "poll_interval_seconds": 60,
+  "known_packages": {
+    "77800MFS_T_F": {
+      "product_family": "Synergy",
+      "product_name": "Autodesk Moldflow Synergy",
+      "catalog_status": "VERIFIED",
+      "components": [
+        "88232MFS_2027_0F",
+        "88068MFS_2026_0F",
+        "88009MFS_2025_0F",
+        "87914MFS_2024_0F",
+        "87793MFS_2023_0F",
+        "87526MFS_2021_0F"
+      ]
+    },
+    "77400MFIA_T_F": {
+      "product_family": "Insight",
+      "product_name": "Autodesk Moldflow Insight",
+      "catalog_status": "VERIFIED",
+      "components": [
+        "88230MFIA_2027_0F",
+        "88067MFIA_2026_0F",
+        "88008MFIA_2025_0F",
+        "87913MFIA_2024_0F",
+        "87791MFIA_2023_0F",
+        "87524MFIA_2021_0F"
+      ]
+    },
+    "76800MFAA_T_F": {
+      "product_family": "MFAA",
+      "product_name": null,
+      "catalog_status": "UNKNOWN",
+      "components": [
+        "88225MFAA_2027_0F",
+        "88064MFAA_2026_0F",
+        "88005MFAA_2025_0F",
+        "87910MFAA_2024_0F",
+        "87787MFAA_2023_0F",
+        "87521MFAA_2021_0F"
+      ]
+    }
+  }
+}

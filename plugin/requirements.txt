@@ -1,0 +1,9 @@
+# pywin32 is required: only it can bind Synergy's SAInstance moniker.
+pywin32>=306
+# comtypes is optional (kept for reference / alternative experiments).
+comtypes>=1.4.0
+# python-pptx builds the Phase-4 engineering review deck (.pptx) from the
+# exported Synergy plot images. Optional at runtime: if it is missing the
+# workflow still completes and only the report step is skipped.
+# (Pillow arrives with it and is used to size the screenshots correctly.)
+python-pptx>=1.0.0

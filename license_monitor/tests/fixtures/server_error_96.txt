@@ -1,0 +1,5 @@
+lmutil - Copyright (c) 1989-2025 Flexera. All Rights Reserved.
+Flexible License Manager status on Fri 9/18/2026 13:01
+
+[Detecting lmgrd processes...]
+Error getting status: License server machine is down or not responding. (-96,7:11001 "WinSock: Host not found (HOST_NOT_FOUND)")

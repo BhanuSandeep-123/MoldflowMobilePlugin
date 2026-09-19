@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "backend_url": "https://REGION-PROJECT.cloudfunctions.net",
+  "api_key": "REPLACE_WITH_THE_KEY_ISSUED_BY_YOUR_BACKEND",
+  "user_id": "REPLACE_WITH_YOUR_USER_ID",
+  "machine_id": "REPLACE_WITH_A_NAME_FOR_THIS_PC"
+}

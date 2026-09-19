@@ -1,0 +1,28 @@
+lmutil - Copyright (c) 1989-2025 Flexera. All Rights Reserved.
+Flexible License Manager status on Fri 9/18/2026 11:22
+
+[Detecting lmgrd processes...]
+License server status: 27000@LAPTOP-CA2QN87F
+    License file(s) on LAPTOP-CA2QN87F: C:\Autodesk\Network License Manager\LAPTOP-CA2QN87F38A7464AF176.lic:
+
+LAPTOP-CA2QN87F: license server UP (MASTER) v11.19.9
+
+Vendor daemon status (on LAPTOP-CA2QN87F):
+
+  adskflex: UP v11.19.9
+Feature usage info:
+
+Users of 77400MFIA_T_F:  (Total of 3 licenses issued;  Total of 0 licenses in use)
+Users of 77800MFS_T_F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 88232MFS_2027_0F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 88068MFS_2026_0F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 88009MFS_2025_0F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 87914MFS_2024_0F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 87793MFS_2023_0F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 87526MFS_2021_0F:  (Total of 1 license issued;  Total of 0 licenses in use)
+Users of 88230MFIA_2027_0F:  (Total of 3 licenses issued;  Total of 0 licenses in use)
+Users of 88067MFIA_2026_0F:  (Total of 3 licenses issued;  Total of 0 licenses in use)
+Users of 88008MFIA_2025_0F:  (Total of 3 licenses issued;  Total of 0 licenses in use)
+Users of 87913MFIA_2024_0F:  (Total of 3 licenses issued;  Total of 0 licenses in use)
+Users of 87791MFIA_2023_0F:  (Total of 3 licenses issued;  Total of 0 licenses in use)
+Users of 87524MFIA_2021_0F:  (Total of 3 licenses issued;  Total of 0 licenses in use)

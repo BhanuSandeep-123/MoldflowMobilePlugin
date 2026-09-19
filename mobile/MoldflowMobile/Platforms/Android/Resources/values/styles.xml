@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+      Overrides the SDK-default Maui.MainTheme (which only sets colorPrimaryDark,
+      the color android:statusBarColor is implicitly derived from under
+      Theme.MaterialComponents.DayNight) to also request dark status-bar icons,
+      since colorPrimaryDark is now the light/bright #FC8F16 brand orange and
+      white icons would no longer be readable against it. Maui.SplashTheme
+      inherits this transitively (Maui.SplashTheme -> Maui.MainTheme.NoActionBar
+      -> Maui.MainTheme), so the splash screen's status bar gets the same
+      treatment with no separate override needed.
+    -->
+    <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
+    </style>
+</resources>

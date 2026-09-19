@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "backend_url": "https://moldflowplugin-mobile-app.onrender.com",
+  "api_key": "dev-moldflow-key-change-me",
+  "user_id": "DEV-USER-001",
+  "machine_id": "DEV-PC-001"
+}

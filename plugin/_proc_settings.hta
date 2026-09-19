@@ -1,0 +1,40 @@
+<html><head><title>Process Settings</title>
+<HTA:APPLICATION ID="pf" SCROLL="no" SYSMENU="yes" BORDER="dialog"
+ CAPTION="yes" SHOWINTASKBAR="yes" INNERBORDER="no"/>
+<style>
+body{font:9pt "Segoe UI";background:#f0f0f0;margin:14px}
+h3{margin:0 0 2px 0;font-size:11pt}
+p.s{margin:0 0 12px 0;color:#555}
+table{border-collapse:collapse;width:100%}
+td{padding:4px 6px}
+td.l{width:210px}
+td.u{width:30px;color:#555}
+input,select{width:210px;font:9pt "Segoe UI"}
+.b{margin-top:16px;text-align:right}
+button{width:86px;height:26px;margin-left:6px;font:9pt "Segoe UI"}
+</style></head><body>
+<h3>Process Settings</h3>
+<p class="s">Sequence: Fill &nbsp;|&nbsp; Leave values unchanged to keep the current defaults.</p>
+<table><tr><td class="l">Mold surface temperature</td><td><input id="f11108" value="60"></td><td class="u">&deg;C</td></tr><tr><td class="l">Melt temperature</td><td><input id="f11002" value="200"></td><td class="u">&deg;C</td></tr><tr><td class="l">Filling control</td><td><select id="f10109"><option value="1" selected>Automatic</option><option value="2">Injection time</option><option value="3">Flow rate</option><option value="5">Relative ram speed profile</option><option value="6">Absolute ram speed profile</option></select></td><td class="u"></td></tr><tr><td class="l">Velocity/pressure switch-over</td><td><select id="f10310"><option value="0" selected>Automatic</option><option value="1">By %volume filled</option><option value="8">By ram position</option><option value="2">By injection pressure</option><option value="3">By hydraulic pressure</option><option value="4">By clamp force</option><option value="5">By pressure control point</option><option value="6">By injection time</option><option value="7">By whichever comes first</option></select></td><td class="u"></td></tr><tr><td class="l">Pack/holding control</td><td><select id="f10704"><option value="5" selected>Automatic</option><option value="4">%Filling pressure vs time</option><option value="2">Packing pressure vs time</option><option value="1">Hydraulic pressure vs time</option><option value="3">%Maximum machine pressure vs time</option></select></td><td class="u"></td></tr><tr><td class="l">Cooling time</td><td><select id="f11109"><option value="1" selected>Specified</option><option value="2">Automatic</option></select></td><td class="u"></td></tr></table>
+<div class="b">
+<button onclick="save()">OK</button><button onclick="cancel()">Cancel</button></div>
+<script language="VBScript">
+Dim ids
+ids = "11108:temp,11002:temp,10109:enum,10310:enum,10704:enum,11109:enum"
+Sub save()
+  Dim fso,f,parts,i,p,el,out
+  Set fso = CreateObject("Scripting.FileSystemObject")
+  Set f = fso.CreateTextFile("C:\\Users\\UnoTEAM-0144\\Documents\\MoldflowSynergyPlugin\\MoldflowSynergyPlugin\\_proc_settings.txt", True)
+  parts = Split(ids, ",")
+  For i = 0 To UBound(parts)
+    p = Split(parts(i), ":")
+    Set el = document.getElementById("f" & p(0))
+    f.WriteLine p(0) & "=" & p(1) & "=" & el.value
+  Next
+  f.Close
+  window.close
+End Sub
+Sub cancel()
+  window.close
+End Sub
+</script></body></html>

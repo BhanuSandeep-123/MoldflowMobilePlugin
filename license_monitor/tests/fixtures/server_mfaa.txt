@@ -1,0 +1,55 @@
+lmutil - Copyright (c) 1989-2025 Flexera. All Rights Reserved.
+Flexible License Manager status on Fri 9/18/2026 13:02
+
+[Detecting lmgrd processes...]
+License server status: 27000@DESKTOP-23TMNR6
+    License file(s) on DESKTOP-23TMNR6: C:\Autodesk\Network License Manager\DESKTOP-23TMNR6E8-CF-83-93-14-4D.lic:
+
+DESKTOP-23TMNR6: license server UP (MASTER) v11.19.9
+
+Vendor daemon status (on DESKTOP-23TMNR6):
+
+  adskflex: UP v11.19.9
+Feature usage info:
+
+Users of 77400MFIA_T_F:  (Total of 12 licenses issued;  Total of 0 licenses in use)
+
+Users of 76800MFAA_T_F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 77800MFS_T_F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88232MFS_2027_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88068MFS_2026_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88009MFS_2025_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 87914MFS_2024_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 87793MFS_2023_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 87526MFS_2021_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88225MFAA_2027_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88064MFAA_2026_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88005MFAA_2025_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 87910MFAA_2024_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 87787MFAA_2023_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 87521MFAA_2021_0F:  (Total of 4 licenses issued;  Total of 0 licenses in use)
+
+Users of 88230MFIA_2027_0F:  (Total of 12 licenses issued;  Total of 0 licenses in use)
+
+Users of 88067MFIA_2026_0F:  (Total of 12 licenses issued;  Total of 0 licenses in use)
+
+Users of 88008MFIA_2025_0F:  (Total of 12 licenses issued;  Total of 0 licenses in use)
+
+Users of 87913MFIA_2024_0F:  (Total of 12 licenses issued;  Total of 0 licenses in use)
+
+Users of 87791MFIA_2023_0F:  (Total of 12 licenses issued;  Total of 0 licenses in use)
+
+Users of 87524MFIA_2021_0F:  (Total of 12 licenses issued;  Total of 0 licenses in use)

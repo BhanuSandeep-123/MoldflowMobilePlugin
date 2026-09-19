@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MoldflowMobile.Views.LicenseServerDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MoldflowMobile"
+    xmlns:vm="clr-namespace:MoldflowMobile.ViewModels"
+    x:DataType="vm:LicenseServerDetailViewModel"
+    Title="Server Details"
+    BackgroundColor="#F7F8FC">
+
+    <RefreshView
+        IsRefreshing="{Binding IsRefreshing}"
+        Refreshing="OnRefreshViewRefreshing">
+
+        <ScrollView>
+
+            <VerticalStackLayout
+                Padding="16,16,16,24"
+                Spacing="14">
+
+                <!-- =====================================================
+                     SERVER HEADER CARD
+                     ===================================================== -->
+                <Border
+                    Padding="18"
+                    BackgroundColor="White"
+                    Stroke="#E2E6EF"
+                    StrokeShape="RoundRectangle 14">
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Spacing="2">
+                                <Label
+                                    Text="{Binding DisplayName}"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    TextColor="#172033" />
+                                <Label
+                                    Text="{Binding Hostname, StringFormat='Hostname: {0}'}"
+                                    FontSize="13"
+                                    TextColor="#697386" />
+                            </VerticalStackLayout>
+
+                            <!-- Health Badge -->
+                            <Border
+                                Grid.Column="1"
+                                Padding="12,5"
+                                StrokeShape="RoundRectangle 14"
+                                StrokeThickness="0"
+                                BackgroundColor="{Binding ServerDetail.StatusBadgeBg}"
+                                VerticalOptions="Start">
+                                <Label
+                                    Text="{Binding StatusText}"
+                                    FontSize="11"
+                                    FontAttributes="Bold"
+                                    TextColor="{Binding ServerDetail.StatusBadgeTextColor}" />
+                            </Border>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#F1F5F9" />
+
+                        <!-- Details Grid -->
+                        <Grid
+                            ColumnDefinitions="120,*"
+                            RowDefinitions="Auto,Auto,Auto"
+                            RowSpacing="6"
+                            ColumnSpacing="8">
+
+                            <Label Text="Last Successful Poll" FontSize="12" TextColor="#697386" />
+                            <Label Grid.Column="1" Text="{Binding LastPollText}" FontSize="12" TextColor="#172033" />
+
+                            <Label Grid.Row="1" Text="Data State" FontSize="12" TextColor="#697386" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding DataStateText}" FontSize="12" FontAttributes="Bold" TextColor="#172033" />
+
+                            <Label Grid.Row="2" Text="Vendor Daemon" FontSize="12" TextColor="#697386" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="adskflex" FontSize="12" TextColor="#172033" />
+
+                        </Grid>
+
+                        <!-- Error Message if present -->
+                        <Border
+                            IsVisible="{Binding HasErrorDetails}"
+                            Padding="10"
+                            BackgroundColor="#FEF2F2"
+                            Stroke="#FCA5A5"
+                            StrokeShape="RoundRectangle 8">
+                            <Label
+                                Text="{Binding ErrorDetails, StringFormat='Status Note: {0}'}"
+                                FontSize="11"
+                                TextColor="#991B1B" />
+                        </Border>
+
+                        <!-- SHORTCUT TO CONSUMERS -->
+                        <Button
+                            Text="View Active Users on this Server"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            HeightRequest="42"
+                            CornerRadius="10"
+                            BackgroundColor="#3157D5"
+                            TextColor="White"
+                            Margin="0,4,0,0"
+                            Clicked="OnViewConsumersClicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+                <!-- =====================================================
+                     PACKAGE & COMPONENT SEMANTICS BANNER
+                     ===================================================== -->
+                <Border
+                    Padding="14,10"
+                    BackgroundColor="#F8FAFC"
+                    Stroke="#E2E8F0"
+                    StrokeShape="RoundRectangle 12">
+                    <VerticalStackLayout Spacing="2">
+                        <Label
+                            Text="License Hierarchy Notice"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="#475569" />
+                        <Label
+                            Text="PACKAGE represents physical seat capacity. COMPONENT entries indicate compatible application versions and do not create additional seats."
+                            FontSize="11"
+                            TextColor="#64748B" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- =====================================================
+                     PACKAGES SECTION
+                     ===================================================== -->
+                <Label
+                    Text="Product Licenses (PACKAGE Authority)"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    TextColor="#172033"
+                    Margin="0,4,0,-4" />
+
+                <!-- Unavailable notice if data_state != AVAILABLE -->
+                <Border
+                    IsVisible="{Binding ServerDetail.IsUnavailable}"
+                    Padding="12"
+                    BackgroundColor="#FEF3C7"
+                    Stroke="#FCD34D"
+                    StrokeShape="RoundRectangle 10">
+                    <Label
+                        Text="License utilization details unavailable because the server is not currently online."
+                        FontSize="12"
+                        TextColor="#92400E" />
+                </Border>
+
+                <CollectionView
+                    ItemsSource="{Binding Packages}"
+                    SelectionMode="None"
+                    IsVisible="{Binding ServerDetail.IsDataAvailable}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="local:LicensePackageDetail">
+                            <Border
+                                Margin="0,6"
+                                Padding="16"
+                                BackgroundColor="White"
+                                Stroke="#E2E6EF"
+                                StrokeShape="RoundRectangle 14">
+
+                                <VerticalStackLayout Spacing="10">
+
+                                    <!-- PACKAGE HEADER -->
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label
+                                                Text="{Binding EffectiveDisplayName}"
+                                                FontSize="16"
+                                                FontAttributes="Bold"
+                                                TextColor="#172033" />
+                                            <Label
+                                                Text="{Binding FeatureCode, StringFormat='Feature Code: {0}'}"
+                                                FontSize="11"
+                                                TextColor="#697386" />
+                                        </VerticalStackLayout>
+
+                                        <!-- STATUS BADGE -->
+                                        <Border
+                                            Grid.Column="1"
+                                            Padding="10,4"
+                                            StrokeShape="RoundRectangle 10"
+                                            StrokeThickness="0"
+                                            BackgroundColor="{Binding StatusBadgeBg}"
+                                            VerticalOptions="Start">
+                                            <Label
+                                                Text="{Binding StatusBadgeText}"
+                                                FontSize="11"
+                                                FontAttributes="Bold"
+                                                TextColor="{Binding StatusBadgeTextColor}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- CAPACITY & UTILIZATION -->
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                        <Label
+                                            Text="{Binding SeatsDisplay}"
+                                            FontSize="14"
+                                            FontAttributes="Bold"
+                                            TextColor="#172033" />
+                                        <Label
+                                            Grid.Column="1"
+                                            Text="{Binding AvailableDisplay}"
+                                            FontSize="13"
+                                            TextColor="#16A34A" />
+                                    </Grid>
+
+                                    <ProgressBar
+                                        Progress="{Binding UtilizationRatio}"
+                                        HeightRequest="8"
+                                        ProgressColor="#3157D5" />
+
+                                    <!-- NESTED COMPONENTS (VERSION METADATA) -->
+                                    <BoxView
+                                        HeightRequest="1"
+                                        Color="#F1F5F9"
+                                        Margin="0,4"
+                                        IsVisible="{Binding HasComponents}" />
+
+                                    <Label
+                                        Text="Compatible Component Versions:"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        TextColor="#475569"
+                                        IsVisible="{Binding HasComponents}" />
+
+                                    <CollectionView
+                                        ItemsSource="{Binding Components}"
+                                        SelectionMode="None"
+                                        IsVisible="{Binding HasComponents}">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="local:LicenseComponentDetail">
+                                                <Border
+                                                    Margin="0,2"
+                                                    Padding="10,8"
+                                                    BackgroundColor="#F8FAFC"
+                                                    Stroke="#E2E8F0"
+                                                    StrokeShape="RoundRectangle 8">
+                                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                                        <VerticalStackLayout Spacing="1">
+                                                            <Label
+                                                                Text="{Binding FeatureCode}"
+                                                                FontSize="12"
+                                                                FontAttributes="Bold"
+                                                                TextColor="#172033" />
+                                                            <Label
+                                                                Text="{Binding CatalogStatus, StringFormat='Catalog: {0}'}"
+                                                                FontSize="10"
+                                                                TextColor="#64748B" />
+                                                        </VerticalStackLayout>
+
+                                                        <Border
+                                                            Grid.Column="1"
+                                                            Padding="6,2"
+                                                            BackgroundColor="#EEF2FF"
+                                                            StrokeShape="RoundRectangle 6"
+                                                            StrokeThickness="0"
+                                                            VerticalOptions="Center">
+                                                            <Label
+                                                                Text="{Binding DisplayVersion}"
+                                                                FontSize="10"
+                                                                FontAttributes="Bold"
+                                                                TextColor="#3157D5" />
+                                                        </Border>
+
+                                                        <Label
+                                                            Grid.Column="2"
+                                                            Text="{Binding InUse, StringFormat='Active: {0}'}"
+                                                            FontSize="11"
+                                                            TextColor="#172033"
+                                                            VerticalOptions="Center" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+
+                                </VerticalStackLayout>
+
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- ACTIVITY INDICATOR -->
+                <ActivityIndicator
+                    IsVisible="{Binding IsBusy}"
+                    IsRunning="{Binding IsBusy}"
+                    HorizontalOptions="Center"
+                    Color="#3157D5"
+                    HeightRequest="40"
+                    WidthRequest="40" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </RefreshView>
+
+</ContentPage>

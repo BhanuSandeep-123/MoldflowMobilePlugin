@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moldflow Automation Center</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo">M</div>
+        <div class="title-area">
+          <h1>Moldflow Automation Center</h1>
+          <span class="subtitle">Project: <span id="header-project-name">Bracket_Optim_V3</span></span>
+        </div>
+      </div>
+
+      <div class="header-progress">
+        <div class="progress-details">
+          <span>Overall Progress: <strong id="header-phase-text">Phase 2 — Analysis Setup</strong></span>
+          <span id="header-time-remaining">Remaining: ~14m</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="header-progress-fill" style="width: 40%;"></div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="status-indicator running">
+          <span class="status-dot"></span>
+          <span id="system-status-text">Working Automatically</span>
+        </div>
+        <button class="icon-button btn-secondary" title="Settings">⚙ Settings</button>
+        <button class="icon-button btn-secondary" title="Help">? Help</button>
+      </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <div class="main-body">
+      
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar-left">
+        <h2>Automation Journey</h2>
+        <div class="stepper" id="stepper">
+          <!-- Populated by JavaScript -->
+        </div>
+      </aside>
+
+      <!-- CENTER WORKSPACE -->
+      <main class="center-workspace" id="workspace">
+        <!-- Dynanmic Workspace Content -->
+        
+        <!-- PROJECT SETUP PAGE -->
+        <section class="workspace-page" id="page-project-setup">
+          <h2>Project Setup</h2>
+          <p class="page-desc">Define a new project study container or choose an existing project to automate.</p>
+          
+          <div class="form-group">
+            <label for="proj-name">Project Name</label>
+            <input type="text" id="proj-name" placeholder="Enter project name..." value="Bracket_Optimization_Study">
+          </div>
+
+          <div class="form-group">
+            <label for="proj-folder">Project Directory</label>
+            <div class="input-with-button">
+              <input type="text" id="proj-folder" placeholder="C:\Users\Username\Documents\MoldflowProjects" value="C:\Users\venka\Downloads\MoldflowSynergyPlugin\scratch_project" readonly>
+              <button class="btn btn-secondary">Browse...</button>
+            </div>
+          </div>
+
+          <div class="recent-projects">
+            <h3>Recent Projects</h3>
+            <div class="project-list">
+              <div class="project-item active">
+                <span class="icon">📁</span>
+                <div class="proj-details">
+                  <strong>Bracket_Optimization_Study</strong>
+                  <span>c:/Users/venka/Downloads/MoldflowSynergyPlugin/scratch_project</span>
+                </div>
+              </div>
+              <div class="project-item">
+                <span class="icon">📁</span>
+                <div class="proj-details">
+                  <strong>Hinge_Tolerance_Analysis</strong>
+                  <span>c:/Users/venka/Documents/Moldflow/Hinge_Study</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="format-badge-container">
+            <span>Supported formats:</span>
+            <span class="format-badge">.mpi</span>
+            <span class="format-badge">.sdy</span>
+            <span class="format-badge">.udm</span>
+          </div>
+        </section>
+
+        <!-- IMPORT CAD PAGE -->
+        <section class="workspace-page" id="page-import-cad">
+          <h2>Import CAD</h2>
+          <p class="page-desc">Drag & drop or browse for a 3D geometry file to import into the study.</p>
+
+          <div class="drag-drop-area" id="drag-drop-zone">
+            <div class="drag-drop-icon">📤</div>
+            <h3>Drag & Drop CAD model here</h3>
+            <p>or click to browse local files</p>
+            <button class="btn btn-primary">Browse CAD File</button>
+          </div>
+
+          <div class="selected-file-info card">
+            <h3>Selected File Details</h3>
+            <div class="file-grid">
+              <div class="file-label">Name:</div>
+              <div class="file-val font-semibold">bracket_hinge_v3.step</div>
+              <div class="file-label">Format:</div>
+              <div class="file-val">STEP Solid Body</div>
+              <div class="file-label">Size:</div>
+              <div class="file-val">4.82 MB</div>
+            </div>
+          </div>
+
+          <div class="preview-placeholder">
+            <span>[ 3D CAD Preview Model Placeholder ]</span>
+          </div>
+        </section>
+
+        <!-- CAD DIAGNOSTICS PAGE -->
+        <section class="workspace-page" id="page-cad-diagnostics">
+          <h2>CAD Diagnostics</h2>
+          <p class="page-desc">Checks geometric soundness and topological defects on the imported CAD bodies.</p>
+
+          <div class="diagnostics-grid">
+            <div class="diagnostic-card success">
+              <div class="card-status">🟢 Passed</div>
+              <h4>Geometry Checks</h4>
+              <p>Topological elements are well formed.</p>
+            </div>
+            <div class="diagnostic-card success">
+              <div class="card-status">🟢 Passed</div>
+              <h4>Edge Intersections</h4>
+              <p>No intersecting or overlapping edges.</p>
+            </div>
+            <div class="diagnostic-card warning">
+              <div class="card-status">🟡 2 Resolved</div>
+              <h4>Face Intersections</h4>
+              <p>Self-intersecting faces auto-corrected.</p>
+            </div>
+            <div class="diagnostic-card success">
+              <div class="card-status">🟢 Passed</div>
+              <h4>Non-Manifold Bodies</h4>
+              <p>All solid bodies are manifold structures.</p>
+            </div>
+            <div class="diagnostic-card error">
+              <div class="card-status">🔴 1 Pending</div>
+              <h4>Sliver Faces</h4>
+              <p>Sliver face at node index 219 needs verification.</p>
+            </div>
+            <div class="diagnostic-card success">
+              <div class="card-status">🟢 No Issues</div>
+              <h4>Toxic Bodies</h4>
+              <p>No corrupted or unusable geometries.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ANALYSIS SEQUENCE PAGE -->
+        <section class="workspace-page" id="page-analysis-sequence">
+          <h2>Analysis Sequence</h2>
+          <p class="page-desc">Select the molding simulation stages to calculate. Highlights indicate selection.</p>
+
+          <div class="analysis-cards">
+            <div class="analysis-card">
+              <h3>Fill</h3>
+              <p>Calculate injection mold cavity filling profile, pressure, and temperature.</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Fill + Pack</h3>
+              <p>Add packing stage calculation to evaluate shrinkage and volumetric changes.</p>
+            </div>
+            <div class="analysis-card active">
+              <h3>Fill + Pack + Warp</h3>
+              <p>Include complete warpage, deflection, and residual stress analysis.</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Cool</h3>
+              <p>Thermal mold analysis for cycle cooling optimizations.</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Cool + Fill + Pack</h3>
+              <p>Comprehensive sequence with transient thermal mold calculations.</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Cool + Fill + Pack + Warp</h3>
+              <p>Full-spectrum molding optimization suite (most accurate).</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- MATERIAL SELECTION PAGE -->
+        <section class="workspace-page" id="page-material-selection">
+          <h2>Material Selection</h2>
+          <p class="page-desc">Choose resin properties from the Autodesk database or define a custom grade.</p>
+
+          <div class="search-bar-row">
+            <input type="text" placeholder="Search by manufacturer, polymer type, or grade..." class="search-input" value="Lexan 141R">
+            <button class="btn btn-primary">Search Database</button>
+          </div>
+
+          <div class="material-grid">
+            <div class="material-card active">
+              <div class="card-header">
+                <span class="mfr">SABIC INNOVATIVE PLASTICS</span>
+                <span class="badge">Selected</span>
+              </div>
+              <h3>Lexan 141R</h3>
+              <p class="polymer">Polycarbonate (PC)</p>
+              <div class="specs">
+                <span>Melt Temp: <strong>280-310°C</strong></span>
+                <span>Mold Temp: <strong>70-90°C</strong></span>
+              </div>
+            </div>
+
+            <div class="material-card">
+              <div class="card-header">
+                <span class="mfr">COVESTRO</span>
+              </div>
+              <h3>Makrolon 2405</h3>
+              <p class="polymer">Polycarbonate (PC)</p>
+              <div class="specs">
+                <span>Melt Temp: <strong>280-320°C</strong></span>
+                <span>Mold Temp: <strong>80-100°C</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card material-info-card">
+            <h3>Material Information Card</h3>
+            <table class="info-table">
+              <tr>
+                <td><strong>Family Abbreviation:</strong></td>
+                <td>PC</td>
+                <td><strong>Trade Name:</strong></td>
+                <td>Lexan 141R</td>
+              </tr>
+              <tr>
+                <td><strong>Manufacturer:</strong></td>
+                <td>Sabic Innovative Plastics</td>
+                <td><strong>Data Source:</strong></td>
+                <td>Autodesk Database (Gold)</td>
+              </tr>
+              <tr>
+                <td><strong>Melt Density:</strong></td>
+                <td>1.0667 g/cm³</td>
+                <td><strong>Transition Temp:</strong></td>
+                <td>145 °C</td>
+              </tr>
+            </table>
+          </div>
+        </section>
+
+        <!-- PROCESS SETTINGS PAGE -->
+        <section class="workspace-page" id="page-process-settings">
+          <h2>Process Settings</h2>
+          <p class="page-desc">Adjust process variables. Default settings have been optimized based on the selected material.</p>
+
+          <div class="settings-grid">
+            <div class="settings-card">
+              <div class="setting-icon">🌡️</div>
+              <div class="setting-control">
+                <label>Melt Temperature (°C)</label>
+                <input type="number" value="295">
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="setting-icon">❄️</div>
+              <div class="setting-control">
+                <label>Mold Temperature (°C)</label>
+                <input type="number" value="80">
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="setting-icon">⚡</div>
+              <div class="setting-control">
+                <label>Velocity (cm³/s)</label>
+                <input type="number" value="45">
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="setting-icon">📉</div>
+              <div class="setting-control">
+                <label>Max Packing Pressure (MPa)</label>
+                <input type="number" value="95">
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="setting-icon">⏱️</div>
+              <div class="setting-control">
+                <label>Cooling Time (s)</label>
+                <input type="number" value="15.5">
+              </div>
+            </div>
+            <div class="settings-card">
+              <div class="setting-icon">📦</div>
+              <div class="setting-control">
+                <label>Packing Time (s)</label>
+                <input type="number" value="8.0">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GATE SELECTION PAGE -->
+        <section class="workspace-page" id="page-gate-selection">
+          <h2>Gate Selection</h2>
+          <p class="page-desc">Locate and select the optimal node or coordinate position to place the injection gate.</p>
+
+          <div class="gate-workspace">
+            <div class="instruction-box card">
+              <h3>Injection Location</h3>
+              <p>Identify optimal node placements. Automatically runs gates diagnostic calculations to verify thin/thick wall section ratios.</p>
+              <div class="gate-status success">
+                <span class="dot"></span>
+                <strong>Status: Gate Selected</strong>
+              </div>
+              <p class="gate-desc">Gate coordinate placed successfully at Node ID: <strong>3411</strong>.</p>
+            </div>
+            
+            <div class="preview-box">
+              <div class="preview-canvas-placeholder">
+                <span>[ Interactive CAD Model: Gate Location 📍 (Node 3411) ]</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MESH GENERATION PAGE (SIMULATION PAGE) -->
+        <section class="workspace-page" id="page-mesh-generation">
+          <h2>Mesh Generation</h2>
+          <p class="page-desc">Discretize solid geometry into 3D Tetrahedral volume elements.</p>
+
+          <div class="sim-container">
+            <div class="progress-ring-container">
+              <svg class="progress-ring" width="180" height="180">
+                <circle class="progress-ring-circle-bg" stroke="#f1f3f4" stroke-width="8" fill="transparent" r="80" cx="90" cy="90"/>
+                <circle class="progress-ring-circle-fill" id="mesh-ring" stroke="#1A73E8" stroke-width="8" fill="transparent" r="80" cx="90" cy="90" stroke-dasharray="502" stroke-dashoffset="150"/>
+              </svg>
+              <div class="ring-label">70%</div>
+            </div>
+
+            <div class="sim-details">
+              <div class="sim-row">
+                <span>Current Task:</span>
+                <strong>Tetrahedral Subdivision</strong>
+              </div>
+              <div class="sim-row">
+                <span>Elapsed Time:</span>
+                <strong>00:01:24</strong>
+              </div>
+              <div class="sim-row">
+                <span>Est. Time Remaining:</span>
+                <strong>00:00:36</strong>
+              </div>
+              <div class="sim-row">
+                <span>Status:</span>
+                <span class="text-blue">Computing element density (481,204 elements generated)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MESH DIAGNOSTICS PAGE (SIMULATION PAGE) -->
+        <section class="workspace-page" id="page-mesh-diagnostics">
+          <h2>Mesh Diagnostics</h2>
+          <p class="page-desc">Performs aspect ratio checks, orientation matching, and thickness verification.</p>
+
+          <div class="sim-container">
+            <div class="progress-ring-container">
+              <svg class="progress-ring" width="180" height="180">
+                <circle class="progress-ring-circle-bg" stroke="#f1f3f4" stroke-width="8" fill="transparent" r="80" cx="90" cy="90"/>
+                <circle class="progress-ring-circle-fill" id="mesh-diag-ring" stroke="#1A73E8" stroke-width="8" fill="transparent" r="80" cx="90" cy="90" stroke-dasharray="502" stroke-dashoffset="400"/>
+              </svg>
+              <div class="ring-label">20%</div>
+            </div>
+
+            <div class="sim-details">
+              <div class="sim-row">
+                <span>Current Task:</span>
+                <strong>Aspect Ratio Check</strong>
+              </div>
+              <div class="sim-row">
+                <span>Elapsed Time:</span>
+                <strong>00:00:15</strong>
+              </div>
+              <div class="sim-row">
+                <span>Est. Time Remaining:</span>
+                <strong>00:01:05</strong>
+              </div>
+              <div class="sim-row">
+                <span>Status:</span>
+                <span class="text-blue">Scanning elements with Aspect Ratio > 1:15</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RUN ANALYSIS PAGE (SIMULATION PAGE) -->
+        <section class="workspace-page" id="page-run-analysis">
+          <h2>Run Simulation Solver</h2>
+          <p class="page-desc">Synergy executes out-of-process Moldflow solver cores (Flow, Pack, Warp).</p>
+
+          <div class="sim-container">
+            <div class="progress-ring-container">
+              <svg class="progress-ring" width="180" height="180">
+                <circle class="progress-ring-circle-bg" stroke="#f1f3f4" stroke-width="8" fill="transparent" r="80" cx="90" cy="90"/>
+                <circle class="progress-ring-circle-fill" id="solver-ring" stroke="#1A73E8" stroke-width="8" fill="transparent" r="80" cx="90" cy="90" stroke-dasharray="502" stroke-dashoffset="450"/>
+              </svg>
+              <div class="ring-label">10%</div>
+            </div>
+
+            <div class="sim-details">
+              <div class="sim-row">
+                <span>Current Task:</span>
+                <strong>Filling Stage Iteration</strong>
+              </div>
+              <div class="sim-row">
+                <span>Elapsed Time:</span>
+                <strong>00:02:40</strong>
+              </div>
+              <div class="sim-row">
+                <span>Est. Time Remaining:</span>
+                <strong>00:12:30</strong>
+              </div>
+              <div class="sim-row">
+                <span>Status:</span>
+                <span class="text-blue">Solving flow equations at transient timestep 1.482s</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REVIEW RESULTS PAGE (SIMULATION PAGE) -->
+        <section class="workspace-page" id="page-review-results">
+          <h2>Review Simulation Results</h2>
+          <p class="page-desc">Extracting post-processing plot charts and node data.</p>
+
+          <div class="sim-container">
+            <div class="progress-ring-container">
+              <svg class="progress-ring" width="180" height="180">
+                <circle class="progress-ring-circle-bg" stroke="#f1f3f4" stroke-width="8" fill="transparent" r="80" cx="90" cy="90"/>
+                <circle class="progress-ring-circle-fill" id="results-ring" stroke="#1A73E8" stroke-width="8" fill="transparent" r="80" cx="90" cy="90" stroke-dasharray="502" stroke-dashoffset="250"/>
+              </svg>
+              <div class="ring-label">50%</div>
+            </div>
+
+            <div class="sim-details">
+              <div class="sim-row">
+                <span>Current Task:</span>
+                <strong>Plot Image Export</strong>
+              </div>
+              <div class="sim-row">
+                <span>Elapsed Time:</span>
+                <strong>00:00:45</strong>
+              </div>
+              <div class="sim-row">
+                <span>Est. Time Remaining:</span>
+                <strong>00:00:45</strong>
+              </div>
+              <div class="sim-row">
+                <span>Status:</span>
+                <span class="text-blue">Saving deflection_warp.png plot file...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GENERATE REPORT PAGE (SIMULATION PAGE) -->
+        <section class="workspace-page" id="page-generate-report">
+          <h2>Generate PowerPoint Presentation</h2>
+          <p class="page-desc">Compiling study data, charts, and analysis metadata into a PPTX report deck.</p>
+
+          <div class="sim-container">
+            <div class="progress-ring-container">
+              <svg class="progress-ring" width="180" height="180">
+                <circle class="progress-ring-circle-bg" stroke="#f1f3f4" stroke-width="8" fill="transparent" r="80" cx="90" cy="90"/>
+                <circle class="progress-ring-circle-fill" id="report-ring" stroke="#1A73E8" stroke-width="8" fill="transparent" r="80" cx="90" cy="90" stroke-dasharray="502" stroke-dashoffset="100"/>
+              </svg>
+              <div class="ring-label">80%</div>
+            </div>
+
+            <div class="sim-details">
+              <div class="sim-row">
+                <span>Current Task:</span>
+                <strong>Rendering Template Slides</strong>
+              </div>
+              <div class="sim-row">
+                <span>Elapsed Time:</span>
+                <strong>00:00:30</strong>
+              </div>
+              <div class="sim-row">
+                <span>Est. Time Remaining:</span>
+                <strong>00:00:08</strong>
+              </div>
+              <div class="sim-row">
+                <span>Status:</span>
+                <span class="text-blue">Embedding wall-thickness diagnosis charts into slide 4</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FINAL COMPLETION PAGE (DASHBOARD) -->
+        <section class="workspace-page" id="page-complete">
+          <div class="success-header">
+            <span class="success-icon">🎉</span>
+            <h2>Workflow Completed Successfully!</h2>
+            <p>Your simulation has run and reports are generated.</p>
+          </div>
+
+          <div class="results-dashboard">
+            <div class="dashboard-row">
+              <div class="summary-card">
+                <span class="card-label">Study Name</span>
+                <strong class="card-val">Bracket_Optimization_Study</strong>
+              </div>
+              <div class="summary-card">
+                <span class="card-label">Analysis Type</span>
+                <strong class="card-val">Fill + Pack + Warp</strong>
+              </div>
+              <div class="summary-card">
+                <span class="card-label">Material Selected</span>
+                <strong class="card-val">Lexan 141R (PC)</strong>
+              </div>
+              <div class="summary-card">
+                <span class="card-label">Total Duration</span>
+                <strong class="card-val">00:18:42</strong>
+              </div>
+            </div>
+
+            <div class="files-card card">
+              <h3>Generated Deliverables</h3>
+              <ul class="file-list">
+                <li><span class="badge success">✔</span> <strong>Study Project File</strong> (Bracket_Optim_V3.mpi)</li>
+                <li><span class="badge success">✔</span> <strong>Mesh Geometry</strong> (bracket_mesh.sdy)</li>
+                <li><span class="badge success">✔</span> <strong>Result Data Files</strong> (.pat / .pfn)</li>
+                <li><span class="badge success">✔</span> <strong>PowerPoint Presentation Report</strong> (Bracket_Hinge_Report.pptx)</li>
+                <li><span class="badge success">✔</span> <strong>Workflow Log</strong> (diagnostics_log.txt)</li>
+              </ul>
+            </div>
+
+            <div class="completion-actions">
+              <button class="btn btn-secondary">Open Study in Synergy</button>
+              <button class="btn btn-secondary">Open PPTX Report</button>
+              <button class="btn btn-secondary">Open Output Folder</button>
+              <button class="btn btn-primary" id="btn-restart">Start New Project</button>
+            </div>
+          </div>
+        </section>
+        
+      </main>
+
+      <!-- RIGHT PANEL (ACTIVE PARAMETERS SUMMARY) -->
+      <aside class="sidebar-right">
+        <h2>Active Parameters</h2>
+        <div class="summary-list">
+          <div class="summary-item">
+            <span class="label">Project Name</span>
+            <span class="value" id="summary-project-name">Bracket_Optimization_Study</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Current CAD File</span>
+            <span class="value text-truncate" id="summary-cad-file">bracket_hinge_v3.step</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Selected Analysis</span>
+            <span class="value" id="summary-analysis-seq">Fill + Pack + Warp</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Selected Material</span>
+            <span class="value" id="summary-material">Lexan 141R (PC) - Sabic</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Current Temperatures</span>
+            <span class="value" id="summary-temperatures">Melt: 295°C / Mold: 80°C</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Gate Status</span>
+            <span class="value text-success" id="summary-gate">✔ Selected (Node 3411)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Mesh Status</span>
+            <span class="value text-warning" id="summary-mesh">⏳ Generating (70%)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Study Name</span>
+            <span class="value" id="summary-study-name">Study_1_Gate1</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Elapsed Time</span>
+            <span class="value" id="summary-elapsed">00:08:42</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Workflow Phase</span>
+            <span class="value" id="summary-phase">Phase 2 — Analysis Setup</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- BOTTOM TIMELINE PANEL -->
+    <footer class="app-timeline">
+      <h2>Activity Log</h2>
+      <div class="timeline-container" id="timeline-log">
+        <!-- Log entries populated dynamically -->
+      </div>
+    </footer>
+
+    <!-- NAVIGATION FOOTER -->
+    <footer class="app-navigation">
+      <div class="nav-left">
+        <button class="btn btn-secondary" id="btn-prev">Previous</button>
+      </div>
+      <div class="nav-right">
+        <button class="btn btn-secondary" id="btn-pause">Pause</button>
+        <button class="btn btn-secondary" id="btn-resume" disabled>Resume</button>
+        <button class="btn btn-secondary" id="btn-cancel">Cancel Workflow</button>
+        <button class="btn btn-primary" id="btn-continue">Continue</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

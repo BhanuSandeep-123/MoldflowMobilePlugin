@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="MoldflowMobile.JobsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Uno"
+    BackgroundColor="#F7F8FC">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- =========================================================
+             HEADER
+             ========================================================= -->
+        <Grid
+            Padding="20,15,20,5"
+            ColumnDefinitions="*,Auto,Auto"
+            ColumnSpacing="8">
+
+            <VerticalStackLayout Spacing="2">
+
+                <Label
+                    Text="Uno"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    CharacterSpacing="2"
+                    TextColor="#3157D5" />
+
+                <Label
+                    Text="My Moldflow Jobs"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    TextColor="#172033" />
+
+                <Label
+                    x:Name="JobCountLabel"
+                    Text="Loading jobs..."
+                    FontSize="13"
+                    TextColor="#697386" />
+
+            </VerticalStackLayout>
+
+            <Button
+                Grid.Column="1"
+                Text="🔑 Licenses"
+                FontSize="13"
+                FontAttributes="Bold"
+                Padding="12,0"
+                HeightRequest="46"
+                CornerRadius="23"
+                BackgroundColor="#EEF2FF"
+                TextColor="#3157D5"
+                Clicked="OnLicensesClicked" />
+
+            <Button
+                Grid.Column="2"
+                Text="↻"
+                FontSize="22"
+                WidthRequest="46"
+                HeightRequest="46"
+                CornerRadius="23"
+                BackgroundColor="White"
+                TextColor="#3157D5"
+                Clicked="OnRefreshClicked" />
+
+        </Grid>
+
+        <!-- =========================================================
+             DASHBOARD SUMMARY (ACTIVE / COMPLETED / CANCELED / OVERALL)
+             ========================================================= -->
+        <Grid
+            Grid.Row="1"
+            Padding="15,8"
+            ColumnDefinitions="*,*,*,*"
+            ColumnSpacing="7">
+
+            <Border
+                x:Name="ActiveCard"
+                Padding="6,12"
+                BackgroundColor="White"
+                Stroke="#E2E6EF"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 14">
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnActiveCardTapped" />
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label
+                        x:Name="ActiveCountLabel"
+                        Text="0"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        TextColor="#B45309" />
+                    <Label
+                        Text="ACTIVE"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#697386" />
+                </VerticalStackLayout>
+
+            </Border>
+
+            <Border
+                x:Name="CompletedCard"
+                Grid.Column="1"
+                Padding="6,12"
+                BackgroundColor="White"
+                Stroke="#E2E6EF"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 14">
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCompletedCardTapped" />
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label
+                        x:Name="CompletedCountLabel"
+                        Text="0"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        TextColor="#16A34A" />
+                    <Label
+                        Text="COMPLETED"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#697386" />
+                </VerticalStackLayout>
+
+            </Border>
+
+            <Border
+                x:Name="CanceledCard"
+                Grid.Column="2"
+                Padding="6,12"
+                BackgroundColor="White"
+                Stroke="#E2E6EF"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 14">
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCanceledCardTapped" />
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label
+                        x:Name="CanceledCountLabel"
+                        Text="0"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        TextColor="#DC2626" />
+                    <Label
+                        Text="CANCELED"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#697386" />
+                </VerticalStackLayout>
+
+            </Border>
+
+            <Border
+                x:Name="OverallCard"
+                Grid.Column="3"
+                Padding="6,12"
+                BackgroundColor="White"
+                Stroke="#E2E6EF"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 14">
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnOverallCardTapped" />
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label
+                        x:Name="OverallCountLabel"
+                        Text="0"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        TextColor="#3157D5" />
+                    <Label
+                        Text="OVERALL"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#697386" />
+                </VerticalStackLayout>
+
+            </Border>
+
+        </Grid>
+
+        <!-- =========================================================
+             DATE FILTER
+             ========================================================= -->
+        <Grid
+            Grid.Row="2"
+            Padding="15,4,15,10"
+            ColumnDefinitions="Auto,Auto,Auto,*"
+            ColumnSpacing="8">
+
+            <Button
+                x:Name="TodayFilterButton"
+                Text="Today"
+                FontSize="13"
+                Padding="14,0"
+                HeightRequest="38"
+                CornerRadius="19"
+                Clicked="OnTodayFilterClicked" />
+
+            <Button
+                Grid.Column="1"
+                x:Name="YesterdayFilterButton"
+                Text="Yesterday"
+                FontSize="13"
+                Padding="14,0"
+                HeightRequest="38"
+                CornerRadius="19"
+                Clicked="OnYesterdayFilterClicked" />
+
+            <Button
+                Grid.Column="2"
+                x:Name="AllFilterButton"
+                Text="All"
+                FontSize="13"
+                Padding="14,0"
+                HeightRequest="38"
+                CornerRadius="19"
+                Clicked="OnAllFilterClicked" />
+
+            <DatePicker
+                Grid.Column="3"
+                x:Name="CalendarDatePicker"
+                Format="📅 dd MMM"
+                FontSize="13"
+                HeightRequest="38"
+                HorizontalOptions="End"
+                DateSelected="OnCalendarDateSelected" />
+
+        </Grid>
+
+        <!-- =========================================================
+             JOB LIST
+             ========================================================= -->
+        <CollectionView
+            Grid.Row="3"
+            x:Name="JobsCollectionView"
+            SelectionMode="Single"
+            SelectionChanged="OnJobSelected"
+            Margin="15,0">
+
+            <CollectionView.EmptyView>
+
+                <VerticalStackLayout
+                    Padding="30"
+                    Spacing="12"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+
+                    <Label
+                        Text="No Moldflow jobs found."
+                        FontSize="18"
+                        HorizontalOptions="Center" />
+
+                    <Label
+                        Text="Run a Moldflow analysis to see it here."
+                        FontSize="14"
+                        TextColor="Gray"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+
+                <DataTemplate>
+
+                    <Border
+                        Margin="0,7"
+                        Padding="16"
+                        StrokeShape="RoundRectangle 14">
+
+                        <VerticalStackLayout Spacing="10">
+
+                            <!-- =================================================
+                                 JOB NAME
+                                 ================================================= -->
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="19"
+                                FontAttributes="Bold" />
+
+                            <!-- =================================================
+                                 ANALYSIS TYPE
+                                 ================================================= -->
+                            <Label
+                                Text="{Binding JobType, StringFormat='Analysis: {0}'}"
+                                FontSize="14"
+                                TextColor="Gray" />
+
+                            <!-- =================================================
+                                 STATUS
+                                 ================================================= -->
+                            <Grid
+                                ColumnDefinitions="*,Auto"
+                                ColumnSpacing="10">
+
+                                <Label
+                                    Text="{Binding DisplayStatus}"
+                                    FontSize="17"
+                                    FontAttributes="Bold" />
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="{Binding Percent, StringFormat='{0:0}%'}"
+                                    FontSize="17"
+                                    FontAttributes="Bold" />
+
+                            </Grid>
+
+                            <!-- =================================================
+                                 PROGRESS
+                                 ================================================= -->
+                            <ProgressBar
+                                Progress="{Binding ProgressValue}"
+                                HeightRequest="8" />
+
+                            <!-- =================================================
+                                 UPDATE COUNT
+                                 ================================================= -->
+                            <Label
+                                Text="{Binding UpdateCount, StringFormat='Updates: {0}'}"
+                                FontSize="13"
+                                TextColor="Gray" />
+
+                            <!-- =================================================
+                                 SCM INFORMATION
+                                 ================================================= -->
+                            <BoxView
+                                HeightRequest="1"
+                                Margin="0,3"
+                                Opacity="0.15" />
+
+                            <Label
+                                Text="Simulation Compute Manager"
+                                FontSize="14"
+                                FontAttributes="Bold" />
+
+                            <Grid
+                                ColumnDefinitions="Auto,*"
+                                RowDefinitions="Auto,Auto,Auto,Auto"
+                                ColumnSpacing="8"
+                                RowSpacing="4">
+
+                                <!-- Source -->
+                                <Label
+                                    Text="Source:"
+                                    FontSize="12"
+                                    TextColor="Gray" />
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="{Binding ComputeSourceDisplay}"
+                                    FontSize="12" />
+
+                                <!-- SCM type -->
+                                <Label
+                                    Grid.Row="1"
+                                    Text="SCM Type:"
+                                    FontSize="12"
+                                    TextColor="Gray" />
+
+                                <Label
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Text="{Binding ScmTypeDisplay}"
+                                    FontSize="12" />
+
+                                <!-- Worker -->
+                                <Label
+                                    Grid.Row="2"
+                                    Text="Worker:"
+                                    FontSize="12"
+                                    TextColor="Gray" />
+
+                                <Label
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Text="{Binding WorkerDisplay}"
+                                    FontSize="12" />
+
+                                <!-- User -->
+                                <Label
+                                    Grid.Row="3"
+                                    Text="SCM User:"
+                                    FontSize="12"
+                                    TextColor="Gray" />
+
+                                <Label
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    Text="{Binding ScmUserDisplay}"
+                                    FontSize="12" />
+
+                            </Grid>
+
+                            <!-- =================================================
+                                 JOB ID
+                                 ================================================= -->
+                            <Label
+                                Text="{Binding ScmJobIdDisplay, StringFormat='SCM Job ID: {0}'}"
+                                FontSize="11"
+                                TextColor="Gray"
+                                LineBreakMode="TailTruncation" />
+
+                            <!-- =================================================
+                                 MACHINE
+                                 ================================================= -->
+                            <Label
+                                Text="{Binding MachineId, StringFormat='Machine: {0}'}"
+                                FontSize="11"
+                                TextColor="Gray" />
+
+                            <!-- =================================================
+                                 STARTED / FINISHED
+                                 ================================================= -->
+                            <Grid
+                                ColumnDefinitions="*,*"
+                                ColumnSpacing="10">
+
+                                <VerticalStackLayout Spacing="1">
+
+                                    <Label
+                                        Text="Started"
+                                        FontSize="11"
+                                        TextColor="Gray" />
+
+                                    <Label
+                                        Text="{Binding StartedDisplay}"
+                                        FontSize="12" />
+
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Spacing="1">
+
+                                    <Label
+                                        Text="Finished"
+                                        FontSize="11"
+                                        TextColor="Gray" />
+
+                                    <Label
+                                        Text="{Binding FinishedDisplay}"
+                                        FontSize="12" />
+
+                                </VerticalStackLayout>
+
+                            </Grid>
+
+                            <!-- =================================================
+                                 REMOVE FROM LIST (completed / failed / cancelled only)
+                                 ================================================= -->
+                            <Button
+                                Text="Remove from list"
+                                FontSize="12"
+                                Padding="10,0"
+                                HeightRequest="34"
+                                CornerRadius="8"
+                                BackgroundColor="#F4F5F9"
+                                TextColor="#697386"
+                                IsVisible="{Binding IsRemovable}"
+                                Clicked="OnRemoveJobClicked" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </DataTemplate>
+
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <!-- =========================================================
+             LOADING INDICATOR
+             ========================================================= -->
+        <ActivityIndicator
+            Grid.Row="3"
+            x:Name="LoadingIndicator"
+            IsVisible="False"
+            IsRunning="False"
+            WidthRequest="50"
+            HeightRequest="50"
+            HorizontalOptions="Center"
+            VerticalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>
