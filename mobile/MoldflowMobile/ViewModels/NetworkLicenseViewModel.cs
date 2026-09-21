@@ -23,6 +23,10 @@ public class NetworkLicenseViewModel : BaseViewModel
                 OnPropertyChanged(nameof(ServersUp));
                 OnPropertyChanged(nameof(ServersDown));
                 OnPropertyChanged(nameof(ActiveCheckoutsTotal));
+                OnPropertyChanged(nameof(TotalServersDisplay));
+                OnPropertyChanged(nameof(ServersUpDisplay));
+                OnPropertyChanged(nameof(ServersDownDisplay));
+                OnPropertyChanged(nameof(ActiveCheckoutsDisplay));
             }
         }
     }
@@ -30,6 +34,18 @@ public class NetworkLicenseViewModel : BaseViewModel
     public ObservableCollection<ServerOverviewItem> Servers { get; } = new();
 
     public ObservableCollection<AggregateProductInventory> AggregateProducts { get; } = new();
+
+    private bool _hasLoadedData;
+    public bool HasLoadedData
+    {
+        get => _hasLoadedData;
+        private set => SetProperty(ref _hasLoadedData, value);
+    }
+
+    public string TotalServersDisplay => !HasLoadedData || HasError ? "-" : TotalServers.ToString();
+    public string ServersUpDisplay => !HasLoadedData || HasError ? "-" : ServersUp.ToString();
+    public string ServersDownDisplay => !HasLoadedData || HasError ? "-" : ServersDown.ToString();
+    public string ActiveCheckoutsDisplay => !HasLoadedData || HasError ? "-" : ActiveCheckoutsTotal.ToString();
 
     public string NoticeText => EnvironmentInventory.Notice;
 
@@ -76,6 +92,7 @@ public class NetworkLicenseViewModel : BaseViewModel
             var response = await _apiService.GetLicenseOverviewAsync();
 
             EnvironmentInventory = response.EnvironmentInventory ?? new EnvironmentInventory();
+            HasLoadedData = true;
 
             // Sync aggregate products
             AggregateProducts.Clear();
@@ -102,6 +119,10 @@ public class NetworkLicenseViewModel : BaseViewModel
             _isRefreshingData = false;
             IsBusy = false;
             IsRefreshing = false;
+            OnPropertyChanged(nameof(TotalServersDisplay));
+            OnPropertyChanged(nameof(ServersUpDisplay));
+            OnPropertyChanged(nameof(ServersDownDisplay));
+            OnPropertyChanged(nameof(ActiveCheckoutsDisplay));
         }
     }
 

@@ -29,12 +29,11 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from app_postgres_ready import db_execute, get_db, get_mobile_user
-
-
 logger = logging.getLogger("moldflow_backend.license_routes")
 
 router = APIRouter(prefix="/licenses", tags=["Network Licenses"])
+
+from app_postgres_ready import db_execute, get_db, get_mobile_user
 
 # Stale timeout: If an UP server has not reported in 5 minutes (300s), flag as STALE
 STALE_THRESHOLD_SECONDS = 300

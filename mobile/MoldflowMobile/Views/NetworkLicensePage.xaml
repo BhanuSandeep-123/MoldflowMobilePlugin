@@ -163,7 +163,7 @@
                             StrokeShape="RoundRectangle 12">
                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                 <Label
-                                    Text="{Binding TotalServers}"
+                                    Text="{Binding TotalServersDisplay}"
                                     FontSize="20"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"
@@ -185,7 +185,7 @@
                             StrokeShape="RoundRectangle 12">
                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                 <Label
-                                    Text="{Binding ServersUp}"
+                                    Text="{Binding ServersUpDisplay}"
                                     FontSize="20"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"
@@ -207,7 +207,7 @@
                             StrokeShape="RoundRectangle 12">
                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                 <Label
-                                    Text="{Binding ServersDown}"
+                                    Text="{Binding ServersDownDisplay}"
                                     FontSize="20"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"
@@ -229,7 +229,7 @@
                             StrokeShape="RoundRectangle 12">
                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                 <Label
-                                    Text="{Binding ActiveCheckoutsTotal}"
+                                    Text="{Binding ActiveCheckoutsDisplay}"
                                     FontSize="20"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"

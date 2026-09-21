@@ -134,6 +134,40 @@ class LicenseMonitor:
         exec_result = self.execute_query(target_override)
         return self.parser.parse_execution_result(exec_result, captured_at=captured_at)
 
+    def push_snapshot(
+        self,
+        snapshot: Snapshot,
+        backend_url: Optional[str] = None,
+        ingestion_key: Optional[str] = None,
+    ) -> bool:
+        """
+        Sends normalized snapshot payload to Stage 3 Backend Ingestion (/internal/licenseStatus).
+        Uses standard urllib to maintain zero external dependencies.
+        """
+        import urllib.request
+        import urllib.error
+
+        base_url = (backend_url or os.getenv("BACKEND_URL") or "http://127.0.0.1:8000").rstrip("/")
+        endpoint = f"{base_url}/internal/licenseStatus"
+        key = ingestion_key or os.getenv("LICENSE_INGESTION_KEY") or "dev-license-ingestion-key-2026"
+
+        payload_bytes = json.dumps(snapshot.to_dict()).encode("utf-8")
+        req = urllib.request.Request(
+            endpoint,
+            data=payload_bytes,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {key}",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return 200 <= resp.status < 300
+        except Exception as exc:
+            print(f"[LicenseMonitor] Ingestion warning ({endpoint}): {exc}")
+            return False
+
     def run_once(self, target_override: Optional[str] = None, indent: int = 2) -> str:
         """
         Runs a single snapshot capture and returns formatted JSON string.
@@ -168,6 +202,23 @@ def main():
         action="store_true",
         help="Run continuous polling loop"
     )
+    parser.add_argument(
+        "--push",
+        action="store_true",
+        help="Push snapshot to backend ingestion API (/internal/licenseStatus)"
+    )
+    parser.add_argument(
+        "--backend-url",
+        type=str,
+        default=None,
+        help="Backend base URL for ingestion (default: BACKEND_URL env or http://127.0.0.1:8000)"
+    )
+    parser.add_argument(
+        "--ingestion-key",
+        type=str,
+        default=None,
+        help="License ingestion bearer key (default: LICENSE_INGESTION_KEY env)"
+    )
     args = parser.parse_args()
 
     monitor = LicenseMonitor(config_path=args.config)
@@ -184,12 +235,27 @@ def main():
                     f"Active Checkouts: {len(snapshot.checkouts)}"
                 )
                 print(summary)
+                if args.push:
+                    pushed = monitor.push_snapshot(
+                        snapshot,
+                        backend_url=args.backend_url,
+                        ingestion_key=args.ingestion_key,
+                    )
+                    print(f"  -> Ingestion push: {'OK' if pushed else 'FAILED'}")
                 time.sleep(monitor.poll_interval)
         except KeyboardInterrupt:
             print("\nPolling stopped by user.")
     else:
         # Default is run once
-        json_output = monitor.run_once(target_override=args.target)
+        snapshot = monitor.capture_snapshot(target_override=args.target)
+        if args.push:
+            pushed = monitor.push_snapshot(
+                snapshot,
+                backend_url=args.backend_url,
+                ingestion_key=args.ingestion_key,
+            )
+            print(f"Ingestion push: {'OK' if pushed else 'FAILED'}")
+        json_output = json.dumps(snapshot.to_dict(), indent=2)
         print(json_output)
 
 

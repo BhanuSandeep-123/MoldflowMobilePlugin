@@ -137,10 +137,11 @@ class TestLicenseReadAPIsStage5(unittest.TestCase):
         # Seed controlled database state for Server A, Server B, and Server DOWN
         with get_db() as conn:
             # 1. Server A: LAPTOP-CA2QN87F (UP, 1 active checkout)
+            now_iso = datetime.now(timezone.utc).isoformat()
             snap_a = LicenseSnapshotPayload(
                 schema_version="1.0",
                 monitor_version="1.0.0",
-                captured_at="2026-09-18T10:00:00Z",
+                captured_at=now_iso,
                 server=LicenseServerPayload(
                     hostname="LAPTOP-CA2QN87F",
                     port=27000,
@@ -235,7 +236,7 @@ class TestLicenseReadAPIsStage5(unittest.TestCase):
             snap_b = LicenseSnapshotPayload(
                 schema_version="1.0",
                 monitor_version="1.0.0",
-                captured_at="2026-09-18T10:00:00Z",
+                captured_at=now_iso,
                 server=LicenseServerPayload(
                     hostname="DESKTOP-23TMNR6",
                     port=27000,
