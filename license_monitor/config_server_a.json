@@ -8,7 +8,7 @@
   },
   "lmutil_path": "C:\\Autodesk\\Network License Manager\\lmutil.exe",
   "query_timeout_seconds": 15,
-  "poll_interval_seconds": 60,
+  "poll_interval_seconds": 15,
   "known_packages": {
     "77800MFS_T_F": {
       "product_family": "Synergy",

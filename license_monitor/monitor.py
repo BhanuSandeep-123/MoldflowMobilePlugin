@@ -33,7 +33,8 @@ class LicenseMonitor:
             r"C:\Autodesk\Network License Manager\lmutil.exe"
         )
         self.server_cfg = self.config.get("server", {})
-        self.query_target = self.server_cfg.get("target", "27000@LAPTOP-CA2QN87F")
+        servers = self.get_configured_servers()
+        self.query_target = self.server_cfg.get("target") or (servers[0]["target"] if servers else None)
         self.timeout_seconds = self.config.get("query_timeout_seconds", 15)
         self.poll_interval = self.config.get("poll_interval_seconds", 60)
 
@@ -51,11 +52,7 @@ class LicenseMonitor:
             return {
                 "monitor_version": "1.0.0",
                 "schema_version": "1.0",
-                "server": {
-                    "hostname": "LAPTOP-CA2QN87F",
-                    "port": 27000,
-                    "target": "27000@LAPTOP-CA2QN87F"
-                },
+                "servers": [],
                 "lmutil_path": r"C:\Autodesk\Network License Manager\lmutil.exe",
                 "query_timeout_seconds": 15,
                 "poll_interval_seconds": 60,
@@ -64,6 +61,28 @@ class LicenseMonitor:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
+    def reload_config(self) -> None:
+        """Reloads configuration from disk to dynamically capture server additions/removals."""
+        if self.config_path.exists():
+            try:
+                self.config = self._load_config(self.config_path)
+                self.poll_interval = self.config.get("poll_interval_seconds", self.poll_interval)
+                self.timeout_seconds = self.config.get("query_timeout_seconds", self.timeout_seconds)
+                self.parser.config = self.config
+            except Exception:
+                pass
+
+    def get_configured_servers(self) -> list[dict[str, Any]]:
+        """
+        Returns list of server configuration dicts.
+        Supports dynamic 'servers' list or single 'server' dict for backwards compatibility.
+        """
+        if "servers" in self.config and isinstance(self.config["servers"], list):
+            return [s for s in self.config["servers"] if isinstance(s, dict) and s.get("target")]
+        if "server" in self.config and isinstance(self.config["server"], dict) and self.config["server"].get("target"):
+            return [self.config["server"]]
+        return []
+
     def execute_query(self, target_override: Optional[str] = None) -> ExecutionResult:
         """
         Executes read-only `lmutil lmstat -a -c <target>` using subprocess.
@@ -71,8 +90,24 @@ class LicenseMonitor:
         - NEVER runs modifying commands (lmdown, lmremove, lmreread, etc.)
         - Subprocess timeout budget
         - Captures stdout, stderr, exit code, duration
+        - Silent windowless execution on Windows (no console flashing)
         """
         target = target_override or self.query_target
+        if not target:
+            servers = self.get_configured_servers()
+            if servers:
+                target = servers[0].get("target")
+
+        if not target:
+            return ExecutionResult(
+                command=[],
+                exit_code=1,
+                stdout="",
+                stderr="No query target configured or specified",
+                duration_seconds=0.0,
+                timed_out=False,
+            )
+
         cmd = [self.lmutil_path, "lmstat", "-a", "-c", target]
 
         if not os.path.exists(self.lmutil_path):
@@ -85,6 +120,14 @@ class LicenseMonitor:
                 timed_out=False,
             )
 
+        creationflags = 0
+        startupinfo = None
+        if sys.platform == "win32":
+            creationflags = subprocess.CREATE_NO_WINDOW
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+
         start_time = time.perf_counter()
         try:
             proc = subprocess.run(
@@ -92,7 +135,9 @@ class LicenseMonitor:
                 capture_output=True,
                 text=True,
                 timeout=self.timeout_seconds,
-                check=False
+                check=False,
+                creationflags=creationflags,
+                startupinfo=startupinfo,
             )
             duration = time.perf_counter() - start_time
             return ExecutionResult(
@@ -164,8 +209,16 @@ class LicenseMonitor:
         try:
             with urllib.request.urlopen(req, timeout=10) as resp:
                 return 200 <= resp.status < 300
+        except urllib.error.HTTPError as exc:
+            err_body = ""
+            try:
+                err_body = exc.read().decode("utf-8")
+            except Exception:
+                pass
+            print(f"[LicenseMonitor] Ingestion warning ({endpoint}): HTTP {exc.code} {exc.reason} - {err_body}", flush=True)
+            return False
         except Exception as exc:
-            print(f"[LicenseMonitor] Ingestion warning ({endpoint}): {exc}")
+            print(f"[LicenseMonitor] Ingestion warning ({endpoint}): {exc}", flush=True)
             return False
 
     def run_once(self, target_override: Optional[str] = None, indent: int = 2) -> str:
@@ -219,44 +272,84 @@ def main():
         default=None,
         help="License ingestion bearer key (default: LICENSE_INGESTION_KEY env)"
     )
+    parser.add_argument(
+        "--log-file",
+        type=str,
+        default=None,
+        help="Path to persistent log file (appends output with timestamps)"
+    )
     args = parser.parse_args()
 
     monitor = LicenseMonitor(config_path=args.config)
 
+    log_path = None
+    if args.log_file:
+        log_path = Path(args.log_file).resolve()
+    elif monitor.config.get("log_file"):
+        log_path = Path(monitor.config.get("log_file")).resolve()
+
+    def log_output(msg: str):
+        print(msg, flush=True)
+        if log_path:
+            try:
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+                ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open(log_path, "a", encoding="utf-8") as f:
+                    f.write(f"[{ts}] {msg}\n")
+            except Exception:
+                pass
+
     if args.poll:
-        print(f"Starting license monitor polling loop for target {args.target or monitor.query_target}...")
-        print(f"Poll interval: {monitor.poll_interval}s. Press Ctrl+C to stop.")
+        init_targets = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
+        log_output(f"Starting license monitor polling loop for {len(init_targets)} target(s): {', '.join(filter(None, init_targets)) or monitor.query_target}...")
+        log_output(f"Poll interval: {monitor.poll_interval}s. Log file: {log_path or 'stdout only'}. Press Ctrl+C to stop.")
         try:
             while True:
-                snapshot = monitor.capture_snapshot(target_override=args.target)
-                summary = (
-                    f"[{snapshot.captured_at}] Status: {snapshot.server.status} | "
-                    f"Packages: {len(snapshot.packages)} | "
-                    f"Active Checkouts: {len(snapshot.checkouts)}"
-                )
-                print(summary)
-                if args.push:
-                    pushed = monitor.push_snapshot(
-                        snapshot,
-                        backend_url=args.backend_url,
-                        ingestion_key=args.ingestion_key,
+                monitor.reload_config()
+                current_servers = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
+                if not current_servers and monitor.query_target:
+                    current_servers = [monitor.query_target]
+
+                for s_target in current_servers:
+                    if not s_target:
+                        continue
+                    snapshot = monitor.capture_snapshot(target_override=s_target)
+                    summary = (
+                        f"[{snapshot.captured_at}] Server: {snapshot.server.hostname} | "
+                        f"Status: {snapshot.server.status.value if hasattr(snapshot.server.status, 'value') else snapshot.server.status} | "
+                        f"Packages: {len(snapshot.packages)} | "
+                        f"Active Checkouts: {len(snapshot.checkouts)}"
                     )
-                    print(f"  -> Ingestion push: {'OK' if pushed else 'FAILED'}")
+                    log_output(summary)
+                    if args.push:
+                        pushed = monitor.push_snapshot(
+                            snapshot,
+                            backend_url=args.backend_url,
+                            ingestion_key=args.ingestion_key,
+                        )
+                        log_output(f"  -> Ingestion push ({snapshot.server.hostname}): {'OK' if pushed else 'FAILED'}")
                 time.sleep(monitor.poll_interval)
         except KeyboardInterrupt:
-            print("\nPolling stopped by user.")
+            log_output("\nPolling stopped by user.")
     else:
-        # Default is run once
-        snapshot = monitor.capture_snapshot(target_override=args.target)
-        if args.push:
-            pushed = monitor.push_snapshot(
-                snapshot,
-                backend_url=args.backend_url,
-                ingestion_key=args.ingestion_key,
-            )
-            print(f"Ingestion push: {'OK' if pushed else 'FAILED'}")
-        json_output = json.dumps(snapshot.to_dict(), indent=2)
-        print(json_output)
+        # Default is run once across all configured servers
+        current_servers = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
+        if not current_servers and monitor.query_target:
+            current_servers = [monitor.query_target]
+
+        for s_target in current_servers:
+            if not s_target:
+                continue
+            snapshot = monitor.capture_snapshot(target_override=s_target)
+            if args.push:
+                pushed = monitor.push_snapshot(
+                    snapshot,
+                    backend_url=args.backend_url,
+                    ingestion_key=args.ingestion_key,
+                )
+                log_output(f"Ingestion push ({snapshot.server.hostname}): {'OK' if pushed else 'FAILED'}")
+            json_output = json.dumps(snapshot.to_dict(), indent=2)
+            log_output(json_output)
 
 
 if __name__ == "__main__":

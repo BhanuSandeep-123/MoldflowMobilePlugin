@@ -1,14 +1,21 @@
 {
   "monitor_version": "1.0.0",
   "schema_version": "1.0",
-  "server": {
-    "hostname": "LAPTOP-CA2QN87F",
-    "port": 27000,
-    "target": "27000@LAPTOP-CA2QN87F"
-  },
+  "servers": [
+    {
+      "hostname": "LAPTOP-CA2QN87F",
+      "port": 27000,
+      "target": "27000@LAPTOP-CA2QN87F"
+    },
+    {
+      "hostname": "DESKTOP-23TMNR6",
+      "port": 27000,
+      "target": "27000@DESKTOP-23TMNR6"
+    }
+  ],
   "lmutil_path": "C:\\Autodesk\\Network License Manager\\lmutil.exe",
   "query_timeout_seconds": 15,
-  "poll_interval_seconds": 60,
+  "poll_interval_seconds": 15,
   "known_packages": {
     "77800MFS_T_F": {
       "product_family": "Synergy",

@@ -238,6 +238,53 @@ def set_isometric_view(syn) -> None:
         _log(f"Could not set isometric view: {e}")
 
 
+def cleanup_orphaned_scm_jobs() -> list:
+    """Scan AMI project directories for stale *~1.job.json files whose SCM jobs
+    have already expired/purged (SCM returns 404/500). If left in place, Synergy 2027's
+    IJobManager tries to attach to them, fails, leaves a corrupted SynJob pointer in
+    memory with string 'mesh' in place of a pointer, and crashes with 0xc000041d
+    when updating the study tree.
+    """
+    import json, urllib.request, urllib.error, shutil
+    search_dirs = [
+        os.path.expanduser(r"~\Documents\My AMI 2027 Projects"),
+        os.path.expanduser(r"~\Documents\Moldflow Projects"),
+    ]
+    cleaned = []
+    for sdir in search_dirs:
+        if not os.path.isdir(sdir):
+            continue
+        backup_dir = os.path.join(sdir, "orphaned_jobs_backup")
+        for root, dirs, files in os.walk(sdir):
+            if "orphaned_jobs_backup" in root:
+                continue
+            for fname in files:
+                if fname.endswith("~1.job.json") or fname.endswith(".job.json"):
+                    fpath = os.path.join(root, fname)
+                    try:
+                        with open(fpath, "r", encoding="utf-8") as fp:
+                            data = json.load(fp)
+                        jid = data.get("jobId")
+                        if not jid:
+                            continue
+                        url = f"http://127.0.0.1:44100/ComputeQueue/v1/jobs/{jid}"
+                        req = urllib.request.Request(url)
+                        try:
+                            with urllib.request.urlopen(req, timeout=1.5) as resp:
+                                pass # Active in SCM, do not touch
+                        except urllib.error.HTTPError as e:
+                            if e.code in (404, 500):
+                                os.makedirs(backup_dir, exist_ok=True)
+                                dest = os.path.join(backup_dir, fname)
+                                shutil.move(fpath, dest)
+                                cleaned.append(f"{fname} (SCM {e.code})")
+                    except Exception:
+                        pass
+    if cleaned:
+        _log(f"Quarantined {len(cleaned)} orphaned SCM job file(s) to prevent Synergy crash: {cleaned}")
+    return cleaned
+
+
 # =========================================================================== #
 #  Main orchestrator                                                          #
 # =========================================================================== #
@@ -247,6 +294,9 @@ def main() -> int:
     path logs and returns quietly so Moldflow's own startup is unaffected."""
     try:
         _log("Startup workflow beginning.")
+
+        # Clean any orphaned SCM job files before Synergy's IJobManager attempts to attach
+        cleanup_orphaned_scm_jobs()
 
         # FIRST, before any early return below: the Assistant panel is opening
         # right now because of the persisted dock state, and it should be shut
