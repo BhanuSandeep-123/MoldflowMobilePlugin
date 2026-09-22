@@ -24,7 +24,10 @@ for d in (BASE_DIR, BACKEND_DIR):
     if str(d) not in sys.path:
         sys.path.insert(0, str(d))
 
-from app_postgres_ready import app, get_db, init_database, create_access_token, db_execute
+try:
+    from backend.app_postgres_ready import app, get_db, init_database, create_access_token, db_execute
+except ImportError:
+    from app_postgres_ready import app, get_db, init_database, create_access_token, db_execute
 
 
 async def asgi_get(path: str, token: str):

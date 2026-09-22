@@ -128,48 +128,56 @@ class LicenseMonitor:
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = subprocess.SW_HIDE
 
-        start_time = time.perf_counter()
-        try:
-            proc = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=self.timeout_seconds,
-                check=False,
-                creationflags=creationflags,
-                startupinfo=startupinfo,
-            )
-            duration = time.perf_counter() - start_time
-            return ExecutionResult(
-                command=cmd,
-                exit_code=proc.returncode,
-                stdout=proc.stdout or "",
-                stderr=proc.stderr or "",
-                duration_seconds=duration,
-                timed_out=False,
-            )
-        except subprocess.TimeoutExpired as exc:
-            duration = time.perf_counter() - start_time
-            stdout = exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
-            stderr = exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
-            return ExecutionResult(
-                command=cmd,
-                exit_code=1,
-                stdout=stdout,
-                stderr=stderr or f"Query timed out after {self.timeout_seconds} seconds",
-                duration_seconds=duration,
-                timed_out=True,
-            )
-        except Exception as exc:
-            duration = time.perf_counter() - start_time
-            return ExecutionResult(
-                command=cmd,
-                exit_code=1,
-                stdout="",
-                stderr=f"Exception executing lmutil: {str(exc)}",
-                duration_seconds=duration,
-                timed_out=False,
-            )
+        max_attempts = 2
+        last_result = None
+        for attempt in range(max_attempts):
+            start_time = time.perf_counter()
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.timeout_seconds,
+                    check=False,
+                    creationflags=creationflags,
+                    startupinfo=startupinfo,
+                )
+                duration = time.perf_counter() - start_time
+                last_result = ExecutionResult(
+                    command=cmd,
+                    exit_code=proc.returncode,
+                    stdout=proc.stdout or "",
+                    stderr=proc.stderr or "",
+                    duration_seconds=duration,
+                    timed_out=False,
+                )
+                if proc.returncode == 0:
+                    return last_result
+                if attempt < max_attempts - 1:
+                    time.sleep(0.3)
+            except subprocess.TimeoutExpired as exc:
+                duration = time.perf_counter() - start_time
+                stdout = exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+                stderr = exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
+                return ExecutionResult(
+                    command=cmd,
+                    exit_code=1,
+                    stdout=stdout,
+                    stderr=stderr or f"Query timed out after {self.timeout_seconds} seconds",
+                    duration_seconds=duration,
+                    timed_out=True,
+                )
+            except Exception as exc:
+                duration = time.perf_counter() - start_time
+                return ExecutionResult(
+                    command=cmd,
+                    exit_code=1,
+                    stdout="",
+                    stderr=f"Exception executing lmutil: {str(exc)}",
+                    duration_seconds=duration,
+                    timed_out=False,
+                )
+        return last_result
 
     def capture_snapshot(self, target_override: Optional[str] = None) -> Snapshot:
         """

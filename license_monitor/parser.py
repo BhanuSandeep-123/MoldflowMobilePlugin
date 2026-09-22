@@ -126,6 +126,24 @@ class FlexNetParser:
     ) -> ServerInfo:
         hostname = self.default_hostname
         port = self.default_port
+
+        # Extract target from command if available as authoritative target fallback
+        if exec_result.command and "-c" in exec_result.command:
+            try:
+                c_idx = exec_result.command.index("-c")
+                if c_idx + 1 < len(exec_result.command):
+                    target_arg = exec_result.command[c_idx + 1]
+                    if "@" in target_arg:
+                        p_str, h_str = target_arg.split("@", 1)
+                        if p_str.isdigit():
+                            port = int(p_str)
+                        if h_str:
+                            hostname = h_str
+                    else:
+                        hostname = target_arg
+            except Exception:
+                pass
+
         status = ServerStatus.UNKNOWN.value
         lmgrd_version = None
         adskflex_status = None
