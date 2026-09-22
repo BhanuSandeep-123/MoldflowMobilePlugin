@@ -46,13 +46,6 @@ public partial class NetworkLicensePage : ContentPage
         await Navigation.PushAsync(new LicenseHistoryPage(_apiService));
     }
 
-    private async void OnServerDetailsClicked(object? sender, EventArgs e)
-    {
-        if (sender is Button button && button.BindingContext is ServerOverviewItem server && !string.IsNullOrWhiteSpace(server.ServerId))
-        {
-            await Navigation.PushAsync(new LicenseServerDetailPage(_apiService, server.ServerId));
-        }
-    }
 
     private async void OnServerConsumersClicked(object? sender, EventArgs e)
     {

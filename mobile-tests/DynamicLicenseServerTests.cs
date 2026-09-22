@@ -224,4 +224,92 @@ public class DynamicLicenseServerTests
         Assert.NotEqual("SERVER-A", server.ServerId);
         Assert.NotEqual("SERVER-B", server.ServerId);
     }
+
+    [Fact]
+    public void NetworkLicenseUI_UnknownSyntheticServer_IsFilteredFromServersCollection()
+    {
+        // Arrange
+        var serverA = CreateMockServer("srv-a-uuid", "laptop-ca2qn87f", "LAPTOP-CA2QN87F", "UP");
+        var serverB = CreateMockServer("srv-b-uuid", "desktop-23tmnr6", "DESKTOP-23TMNR6", "UP");
+        var unknownServer1 = new ServerOverviewItem
+        {
+            ServerId = "srv-unknown-uuid",
+            Hostname = "unknown",
+            DisplayName = "UNKNOWN",
+            Status = "DOWN",
+            DataState = "UNAVAILABLE"
+        };
+        var unknownServer2 = new ServerOverviewItem
+        {
+            ServerId = "srv-empty-uuid",
+            Hostname = "",
+            DisplayName = "UNKNOWN",
+            Status = "DOWN",
+            DataState = "UNAVAILABLE"
+        };
+
+        var incoming = new List<ServerOverviewItem> { serverA, serverB, unknownServer1, unknownServer2 };
+
+        // Act: Filter using IsUnknownOrSynthetic
+        var visibleServers = incoming.Where(s => !s.IsUnknownOrSynthetic).ToList();
+
+        // Assert: UNKNOWN servers are completely excluded
+        Assert.True(unknownServer1.IsUnknownOrSynthetic);
+        Assert.True(unknownServer2.IsUnknownOrSynthetic);
+        Assert.False(serverA.IsUnknownOrSynthetic);
+        Assert.False(serverB.IsUnknownOrSynthetic);
+
+        Assert.Equal(2, visibleServers.Count);
+        Assert.DoesNotContain(visibleServers, s => string.Equals(s.Hostname, "unknown", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(visibleServers, s => string.Equals(s.DisplayName, "UNKNOWN", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(visibleServers, s => s.Hostname == "laptop-ca2qn87f");
+        Assert.Contains(visibleServers, s => s.Hostname == "desktop-23tmnr6");
+
+        // Metrics reflect only visible real servers
+        var totalServers = visibleServers.Count;
+        var serversUp = visibleServers.Count(s => s.IsOnline);
+        var serversDown = visibleServers.Count(s => !s.IsOnline);
+        Assert.Equal(2, totalServers);
+        Assert.Equal(2, serversUp);
+        Assert.Equal(0, serversDown);
+    }
+
+    [Fact]
+    public void NetworkLicenseUI_ConfiguredServerDown_PreservesIdentityAndStatus_IsNotFiltered()
+    {
+        // Arrange: Server B is DOWN due to network error, but has configured hostname DESKTOP-23TMNR6
+        var serverA = CreateMockServer("srv-a-uuid", "laptop-ca2qn87f", "LAPTOP-CA2QN87F", "UP");
+        var serverB = new ServerOverviewItem
+        {
+            ServerId = "srv-b-uuid",
+            Hostname = "desktop-23tmnr6",
+            DisplayName = "DESKTOP-23TMNR6",
+            Status = "DOWN",
+            DataState = "UNAVAILABLE",
+            LastErrorCode = -16,
+            LastErrorMessage = "Cannot read data from license server system."
+        };
+
+        var incoming = new List<ServerOverviewItem> { serverA, serverB };
+
+        // Act
+        var visibleServers = incoming.Where(s => !s.IsUnknownOrSynthetic).ToList();
+
+        // Assert: Server B is preserved with its actual configured identity and DOWN status
+        Assert.False(serverB.IsUnknownOrSynthetic);
+        Assert.Equal(2, visibleServers.Count);
+        var itemB = visibleServers.FirstOrDefault(s => s.Hostname == "desktop-23tmnr6");
+        Assert.NotNull(itemB);
+        Assert.Equal("DESKTOP-23TMNR6", itemB.DisplayName);
+        Assert.Equal("DOWN", itemB.Status);
+        Assert.False(itemB.IsOnline);
+        Assert.Equal("SERVER DOWN", itemB.HealthDisplayText);
+        Assert.Equal(-16, itemB.LastErrorCode);
+
+        // Metrics accurately show 2 total, 1 up, 1 down
+        Assert.Equal(2, visibleServers.Count);
+        Assert.Equal(1, visibleServers.Count(s => s.IsOnline));
+        Assert.Equal(1, visibleServers.Count(s => !s.IsOnline));
+    }
 }
+

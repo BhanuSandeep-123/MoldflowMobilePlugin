@@ -49,11 +49,11 @@ public class NetworkLicenseViewModel : BaseViewModel
 
     public string NoticeText => EnvironmentInventory.Notice;
 
-    public int TotalServers => EnvironmentInventory.TotalServers;
+    public int TotalServers => Servers.Count;
 
-    public int ServersUp => EnvironmentInventory.ServersUp;
+    public int ServersUp => Servers.Count(s => s.IsOnline);
 
-    public int ServersDown => EnvironmentInventory.ServersDown;
+    public int ServersDown => Servers.Count(s => !s.IsOnline);
 
     public int ActiveCheckoutsTotal => EnvironmentInventory.ActiveCheckoutsTotal;
 
@@ -126,13 +126,36 @@ public class NetworkLicenseViewModel : BaseViewModel
         }
     }
 
-    private void SyncServers(List<ServerOverviewItem> incoming)
+    public void SyncServers(List<ServerOverviewItem> incoming)
     {
         Servers.Clear();
         foreach (var server in incoming)
         {
+            if (IsUnknownOrSyntheticServer(server))
+                continue;
+
             Servers.Add(server);
         }
+
+        OnPropertyChanged(nameof(TotalServers));
+        OnPropertyChanged(nameof(ServersUp));
+        OnPropertyChanged(nameof(ServersDown));
+        OnPropertyChanged(nameof(TotalServersDisplay));
+        OnPropertyChanged(nameof(ServersUpDisplay));
+        OnPropertyChanged(nameof(ServersDownDisplay));
+    }
+
+    public static bool IsUnknownOrSyntheticServer(ServerOverviewItem? server)
+    {
+        if (server == null)
+            return true;
+
+        var host = (server.Hostname ?? string.Empty).Trim();
+        var display = (server.DisplayName ?? string.Empty).Trim();
+
+        return string.IsNullOrEmpty(host)
+            || string.Equals(host, "UNKNOWN", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(display, "UNKNOWN", StringComparison.OrdinalIgnoreCase);
     }
 
     // =========================================================

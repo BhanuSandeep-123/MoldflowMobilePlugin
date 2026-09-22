@@ -353,6 +353,12 @@ public class ServerOverviewItem
     public bool IsOnline => NormalizedStatus == "UP";
 
     [JsonIgnore]
+    public bool IsUnknownOrSynthetic =>
+        string.IsNullOrEmpty(Hostname?.Trim())
+        || string.Equals(Hostname.Trim(), "UNKNOWN", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(DisplayName?.Trim(), "UNKNOWN", StringComparison.OrdinalIgnoreCase);
+
+    [JsonIgnore]
     public bool IsDataAvailable => DataState.Equals("AVAILABLE", StringComparison.OrdinalIgnoreCase) && IsOnline;
 
     [JsonIgnore]

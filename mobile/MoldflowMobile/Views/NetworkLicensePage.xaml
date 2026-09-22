@@ -434,27 +434,15 @@
 
                                         <BoxView HeightRequest="1" Color="#F1F5F9" Margin="0,2" />
 
-                                        <!-- ACTION BUTTONS: SERVER DETAIL & ACTIVE USERS -->
-                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                                            <Button
-                                                Text="Server Details"
-                                                FontSize="12"
-                                                HeightRequest="38"
-                                                CornerRadius="10"
-                                                BackgroundColor="#F4F5F9"
-                                                TextColor="#3157D5"
-                                                Clicked="OnServerDetailsClicked" />
-
-                                            <Button
-                                                Grid.Column="1"
-                                                Text="Active Users"
-                                                FontSize="12"
-                                                HeightRequest="38"
-                                                CornerRadius="10"
-                                                BackgroundColor="#3157D5"
-                                                TextColor="White"
-                                                Clicked="OnServerConsumersClicked" />
-                                        </Grid>
+                                        <!-- ACTION BUTTON: ACTIVE USERS -->
+                                        <Button
+                                            Text="Active Users"
+                                            FontSize="12"
+                                            HeightRequest="38"
+                                            CornerRadius="10"
+                                            BackgroundColor="#3157D5"
+                                            TextColor="White"
+                                            Clicked="OnServerConsumersClicked" />
 
                                     </VerticalStackLayout>
 
