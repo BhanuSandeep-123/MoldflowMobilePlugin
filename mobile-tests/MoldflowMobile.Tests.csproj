@@ -19,6 +19,7 @@
     <!-- Compile LicenseModels, ViewModels, and ApiService directly to test them under net10.0 -->
     <Compile Include="..\mobile\MoldflowMobile\LicenseModels.cs" Link="Models\LicenseModels.cs" />
     <Compile Include="..\mobile\MoldflowMobile\ViewModels\BaseViewModel.cs" Link="ViewModels\BaseViewModel.cs" />
+    <Compile Include="..\mobile\MoldflowMobile\Job.cs" Link="Models\Job.cs" />
   </ItemGroup>
 
 </Project>

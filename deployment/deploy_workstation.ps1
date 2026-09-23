@@ -2,7 +2,7 @@
 # Complete automated workstation installer for Moldflow Mobile Job Monitoring.
 # Supports any Windows workstation without machine-specific hardcoding.
 
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [string]$BackendUrl = "https://moldflowplugin-mobile-app.onrender.com",
     [Parameter(Mandatory=$true)]
@@ -37,7 +37,7 @@ try {
     $resp = Invoke-RestMethod -Uri $healthUrl -Method Get -TimeoutSec 10
     Write-Host "      [OK] Backend is reachable! Status: $($resp.status) ($($resp.service))" -ForegroundColor Green
 } catch {
-    Write-Warning "Could not reach backend at $healthUrl: $_"
+    Write-Warning "Could not reach backend at ${healthUrl}: $_"
     Write-Warning "Continuing deployment; ensure backend is accessible before starting analyses."
 }
 

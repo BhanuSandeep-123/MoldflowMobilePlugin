@@ -18,6 +18,65 @@ from .models import ExecutionResult, Snapshot, ServerStatus
 from .parser import FlexNetParser
 
 
+class SingleInstanceLock:
+    """
+    Lightweight OS-level single-instance process lock for Windows.
+    Uses kernel file locking via msvcrt.locking (with fcntl fallback on POSIX).
+    Guarantees:
+    - Exactly one polling monitor instance runs at any time.
+    - Second instance detects existing instance and exits cleanly.
+    - Operating system automatically releases lock if process crashes or is killed (no stale lock risk).
+    """
+
+    def __init__(self, lock_file_path: Path):
+        self.lock_file_path = lock_file_path.resolve()
+        self.lock_file = None
+
+    def acquire(self) -> bool:
+        try:
+            self.lock_file_path.parent.mkdir(parents=True, exist_ok=True)
+            self.lock_file = open(self.lock_file_path, "a+b")
+            if sys.platform == "win32":
+                import msvcrt
+                self.lock_file.seek(0)
+                msvcrt.locking(self.lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(self.lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+            self.lock_file.seek(0)
+            self.lock_file.truncate()
+            self.lock_file.write(f"pid={os.getpid()}\n".encode("utf-8"))
+            self.lock_file.flush()
+            return True
+        except (OSError, IOError):
+            if self.lock_file:
+                try:
+                    self.lock_file.close()
+                except Exception:
+                    pass
+                self.lock_file = None
+            return False
+
+    def release(self) -> None:
+        if self.lock_file:
+            try:
+                if sys.platform == "win32":
+                    import msvcrt
+                    self.lock_file.seek(0)
+                    msvcrt.locking(self.lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(self.lock_file.fileno(), fcntl.LOCK_UN)
+            except Exception:
+                pass
+            try:
+                self.lock_file.close()
+            except Exception:
+                pass
+            self.lock_file = None
+
+
 class LicenseMonitor:
     """
     Local read-only license monitor.
@@ -307,38 +366,63 @@ def main():
             except Exception:
                 pass
 
+    lock = None
     if args.poll:
+        lock_path = (log_path.parent / "license_monitor.lock") if log_path else (Path(__file__).parent.resolve() / "license_monitor.lock")
+        lock = SingleInstanceLock(lock_path)
+        if not lock.acquire():
+            log_output(f"[LicenseMonitor] Another instance of Network License Monitor is already running (locked via {lock_path}). Exiting cleanly.")
+            sys.exit(0)
+
         init_targets = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
         log_output(f"Starting license monitor polling loop for {len(init_targets)} target(s): {', '.join(filter(None, init_targets)) or monitor.query_target}...")
         log_output(f"Poll interval: {monitor.poll_interval}s. Log file: {log_path or 'stdout only'}. Press Ctrl+C to stop.")
         try:
             while True:
-                monitor.reload_config()
-                current_servers = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
-                if not current_servers and monitor.query_target:
-                    current_servers = [monitor.query_target]
+                try:
+                    monitor.reload_config()
+                except Exception as r_exc:
+                    log_output(f"[LicenseMonitor] Unexpected error reloading config: {type(r_exc).__name__}: {r_exc}")
+
+                try:
+                    current_servers = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
+                    if not current_servers and monitor.query_target:
+                        current_servers = [monitor.query_target]
+                except Exception as srv_exc:
+                    log_output(f"[LicenseMonitor] Unexpected error resolving server targets: {type(srv_exc).__name__}: {srv_exc}")
+                    current_servers = []
 
                 for s_target in current_servers:
                     if not s_target:
                         continue
-                    snapshot = monitor.capture_snapshot(target_override=s_target)
-                    summary = (
-                        f"[{snapshot.captured_at}] Server: {snapshot.server.hostname} | "
-                        f"Status: {snapshot.server.status.value if hasattr(snapshot.server.status, 'value') else snapshot.server.status} | "
-                        f"Packages: {len(snapshot.packages)} | "
-                        f"Active Checkouts: {len(snapshot.checkouts)}"
-                    )
-                    log_output(summary)
-                    if args.push:
-                        pushed = monitor.push_snapshot(
-                            snapshot,
-                            backend_url=args.backend_url,
-                            ingestion_key=args.ingestion_key,
+                    try:
+                        snapshot = monitor.capture_snapshot(target_override=s_target)
+                        summary = (
+                            f"[{snapshot.captured_at}] Server: {snapshot.server.hostname} | "
+                            f"Status: {snapshot.server.status.value if hasattr(snapshot.server.status, 'value') else snapshot.server.status} | "
+                            f"Packages: {len(snapshot.packages)} | "
+                            f"Active Checkouts: {len(snapshot.checkouts)}"
                         )
-                        log_output(f"  -> Ingestion push ({snapshot.server.hostname}): {'OK' if pushed else 'FAILED'}")
-                time.sleep(monitor.poll_interval)
+                        log_output(summary)
+                        if args.push:
+                            pushed = monitor.push_snapshot(
+                                snapshot,
+                                backend_url=args.backend_url,
+                                ingestion_key=args.ingestion_key,
+                            )
+                            log_output(f"  -> Ingestion push ({snapshot.server.hostname}): {'OK' if pushed else 'FAILED'}")
+                    except Exception as s_exc:
+                        log_output(f"[LicenseMonitor] Unexpected error processing target '{s_target}': {type(s_exc).__name__}: {s_exc}")
+
+                try:
+                    time.sleep(monitor.poll_interval)
+                except Exception as sl_exc:
+                    log_output(f"[LicenseMonitor] Sleep interrupted: {type(sl_exc).__name__}: {sl_exc}")
         except KeyboardInterrupt:
             log_output("\nPolling stopped by user.")
+        finally:
+            if lock:
+                lock.release()
     else:
         # Default is run once across all configured servers
         current_servers = [args.target] if args.target else [s.get("target") for s in monitor.get_configured_servers()]
@@ -348,16 +432,19 @@ def main():
         for s_target in current_servers:
             if not s_target:
                 continue
-            snapshot = monitor.capture_snapshot(target_override=s_target)
-            if args.push:
-                pushed = monitor.push_snapshot(
-                    snapshot,
-                    backend_url=args.backend_url,
-                    ingestion_key=args.ingestion_key,
-                )
-                log_output(f"Ingestion push ({snapshot.server.hostname}): {'OK' if pushed else 'FAILED'}")
-            json_output = json.dumps(snapshot.to_dict(), indent=2)
-            log_output(json_output)
+            try:
+                snapshot = monitor.capture_snapshot(target_override=s_target)
+                if args.push:
+                    pushed = monitor.push_snapshot(
+                        snapshot,
+                        backend_url=args.backend_url,
+                        ingestion_key=args.ingestion_key,
+                    )
+                    log_output(f"Ingestion push ({snapshot.server.hostname}): {'OK' if pushed else 'FAILED'}")
+                json_output = json.dumps(snapshot.to_dict(), indent=2)
+                log_output(json_output)
+            except Exception as s_exc:
+                log_output(f"[LicenseMonitor] Unexpected error processing target '{s_target}': {type(s_exc).__name__}: {s_exc}")
 
 
 if __name__ == "__main__":

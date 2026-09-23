@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MoldflowMobile;
 
@@ -95,15 +95,10 @@ public class Job
 
     [JsonIgnore]
     public bool IsFailed =>
-        DisplayStatus is
-            "FAILED" or
-            "CANCELED" or
-            "CANCELLED" or
-            "TIMEDOUT";
+        DisplayStatus == "FAILED";
 
-    // Distinct from IsFailed (which lumps FAILED/CANCELED/TIMEDOUT together
-    // for "can this be removed from the list") — the dashboard needs a
-    // Canceled-only bucket that a real FAILED job never counts toward.
+    // Distinct from IsFailed — the dashboard needs a Canceled-only bucket
+    // that a real FAILED job never counts toward.
     [JsonIgnore]
     public bool IsCanceled =>
         DisplayStatus is "CANCELED" or "CANCELLED";
@@ -119,7 +114,7 @@ public class Job
     // terminal state — matches the backend's archive-eligibility check.
     [JsonIgnore]
     public bool IsRemovable =>
-        IsCompleted || IsFailed;
+        IsCompleted || IsFailed || IsCanceled || DisplayStatus == "TIMEDOUT";
 
     [JsonIgnore]
     public string StartedDisplay

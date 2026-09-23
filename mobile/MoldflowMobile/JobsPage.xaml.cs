@@ -17,7 +17,8 @@ public partial class JobsPage : ContentPage
         All,
         Active,
         Completed,
-        Canceled
+        Canceled,
+        Failed
     }
 
     private static readonly Color FilterActiveBackground = Color.FromArgb("#3157D5");
@@ -257,10 +258,12 @@ public partial class JobsPage : ContentPage
         var active = _allJobs.Count(j => j.IsRunning || j.IsQueued);
         var completed = _allJobs.Count(j => j.IsCompleted);
         var canceled = _allJobs.Count(j => j.IsCanceled);
+        var failed = _allJobs.Count(j => j.IsFailed);
 
         ActiveCountLabel.Text = active.ToString();
         CompletedCountLabel.Text = completed.ToString();
         CanceledCountLabel.Text = canceled.ToString();
+        FailedCountLabel.Text = failed.ToString();
         OverallCountLabel.Text = _allJobs.Count.ToString();
     }
 
@@ -318,6 +321,7 @@ public partial class JobsPage : ContentPage
             StatusFilterMode.Active => filtered.Where(j => j.IsRunning || j.IsQueued),
             StatusFilterMode.Completed => filtered.Where(j => j.IsCompleted),
             StatusFilterMode.Canceled => filtered.Where(j => j.IsCanceled),
+            StatusFilterMode.Failed => filtered.Where(j => j.IsFailed),
             _ => filtered
         };
 
@@ -338,6 +342,7 @@ public partial class JobsPage : ContentPage
             StatusFilterMode.Active => " · Active",
             StatusFilterMode.Completed => " · Completed",
             StatusFilterMode.Canceled => " · Canceled",
+            StatusFilterMode.Failed => " · Failed",
             _ => string.Empty
         };
 
@@ -381,6 +386,7 @@ public partial class JobsPage : ContentPage
         SetCardSelected(ActiveCard, _statusFilter == StatusFilterMode.Active);
         SetCardSelected(CompletedCard, _statusFilter == StatusFilterMode.Completed);
         SetCardSelected(CanceledCard, _statusFilter == StatusFilterMode.Canceled);
+        SetCardSelected(FailedCard, _statusFilter == StatusFilterMode.Failed);
         SetCardSelected(OverallCard, _statusFilter == StatusFilterMode.All);
     }
 
@@ -417,6 +423,17 @@ public partial class JobsPage : ContentPage
             _statusFilter == StatusFilterMode.Canceled
                 ? StatusFilterMode.All
                 : StatusFilterMode.Canceled;
+
+        UpdateSummaryCardStyles();
+        ApplyFiltersAndDisplay();
+    }
+
+    private void OnFailedCardTapped(object? sender, TappedEventArgs e)
+    {
+        _statusFilter =
+            _statusFilter == StatusFilterMode.Failed
+                ? StatusFilterMode.All
+                : StatusFilterMode.Failed;
 
         UpdateSummaryCardStyles();
         ApplyFiltersAndDisplay();

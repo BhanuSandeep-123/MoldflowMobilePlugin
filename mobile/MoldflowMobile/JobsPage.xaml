@@ -66,17 +66,17 @@
         </Grid>
 
         <!-- =========================================================
-             DASHBOARD SUMMARY (ACTIVE / COMPLETED / CANCELED / OVERALL)
+             DASHBOARD SUMMARY (ACTIVE / COMPLETED / CANCELED / FAILED / OVERALL)
              ========================================================= -->
         <Grid
             Grid.Row="1"
-            Padding="15,8"
-            ColumnDefinitions="*,*,*,*"
-            ColumnSpacing="7">
+            Padding="10,8"
+            ColumnDefinitions="*,*,*,*,*"
+            ColumnSpacing="5">
 
             <Border
                 x:Name="ActiveCard"
-                Padding="6,12"
+                Padding="4,12"
                 BackgroundColor="White"
                 Stroke="#E2E6EF"
                 StrokeThickness="2"
@@ -107,7 +107,7 @@
             <Border
                 x:Name="CompletedCard"
                 Grid.Column="1"
-                Padding="6,12"
+                Padding="4,12"
                 BackgroundColor="White"
                 Stroke="#E2E6EF"
                 StrokeThickness="2"
@@ -138,7 +138,7 @@
             <Border
                 x:Name="CanceledCard"
                 Grid.Column="2"
-                Padding="6,12"
+                Padding="4,12"
                 BackgroundColor="White"
                 Stroke="#E2E6EF"
                 StrokeThickness="2"
@@ -167,9 +167,40 @@
             </Border>
 
             <Border
-                x:Name="OverallCard"
+                x:Name="FailedCard"
                 Grid.Column="3"
-                Padding="6,12"
+                Padding="4,12"
+                BackgroundColor="White"
+                Stroke="#E2E6EF"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 14">
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnFailedCardTapped" />
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label
+                        x:Name="FailedCountLabel"
+                        Text="0"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        TextColor="#DC2626" />
+                    <Label
+                        Text="FAILED"
+                        FontSize="10"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#697386" />
+                </VerticalStackLayout>
+
+            </Border>
+
+            <Border
+                x:Name="OverallCard"
+                Grid.Column="4"
+                Padding="4,12"
                 BackgroundColor="White"
                 Stroke="#E2E6EF"
                 StrokeThickness="2"

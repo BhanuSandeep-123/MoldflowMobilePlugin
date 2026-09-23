@@ -87,5 +87,6 @@ Export the results with parameters corresponding to screenshots and their inform
 **Date:** 11-09-2026
 *Fixed the scm user correct information in mobile app and also applied vice versa for scm job manager means whenever user clicks cancel in scm job manager that also should cancelled in moldflow mobile app.
 
-**Date:** 18-09-2026
+**Date:** 18,21,22-09-2026
 *Working on exploration of network license server on multiple systems how to connect with mobile dashboard for different user with same network license. Currently integrating license section in the mobile App.
+
