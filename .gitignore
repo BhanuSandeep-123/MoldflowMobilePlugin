@@ -1,0 +1,120 @@
+# ================================================================
+# MoldflowMobileSystem .gitignore
+# ================================================================
+
+# ── Python ──────────────────────────────────────────────────────
+.venv/
+.venv/**
+plugin/.venv/
+plugin/.venv/**
+monitor/.venv/
+monitor/.venv/**
+*_log.txt
+*_diag.txt
+monitor_log.txt
+plugin_log.txt
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── .NET / C# ────────────────────────────────────────────────────
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.svc.cs
+*.pdb
+*.mdb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.aps
+*.ncb
+*.db
+.ionide/
+TestResults/
+
+# ── Secrets ──────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+secrets/
+*.json.secret
+firebase-service-account.json
+*-firebase-adminsdk-*.json
+*-service-account.json
+google-credentials.json
+
+# ── Runtime / Databases ──────────────────────────────────────────
+logs/
+*.log
+sessions/
+reports/
+*cad_diagnostics_report.json
+*.db
+*.dump
+*.sqlite
+*.sqlite3
+*.tmp
+*.bak
+
+# ── Archives ─────────────────────────────────────────────────────
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# ── IDE ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ── Moldflow runtime artifacts ───────────────────────────────────
+*.flag
+_import_pending.flag
+_import_ready.flag
+_manual_session.flag
+nul
+ui_focus_request.json
+ui_heartbeat.txt
+ui_state.json
+
+# ── Mobile build output ──────────────────────────────────────────
+*.apk
+*.aab
+*.ipa
+
+# ── NuGet ────────────────────────────────────────────────────────
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ── Test results ─────────────────────────────────────────────────
+coverage/
+*.coverage
+*.coveragexml
+TestResult.xml
+
+# ── agents/post_analyze runtime artifacts ────────────────────────
+agents/post_analyze/config.json
+agents/post_analyze/standalone_agent.log
+agents/post_analyze/standalone_error.log
+agents/post_analyze/inspection_results/
+agents/post_analyze/__pycache__/
+license_monitor/license_monitor.lock
