@@ -35,7 +35,31 @@ Option Explicit
 ' moldflow_observer.py (which has always looked for the flag next to
 ' itself, i.e. in THIS folder, not the outer one). Verified against disk
 ' 2026-07-27: only this path actually contains moldflow_observer.py.
-Const PLUGIN_DIR = "C:\Users\UnoTEAM-0144\Documents\MoldflowMobileSystem\plugin"
+Dim PLUGIN_DIR
+Function ResolvePluginDir()
+    On Error Resume Next
+    Dim sh, fso, p, userProfile
+    Set sh = CreateObject("WScript.Shell")
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    p = sh.ExpandEnvironmentStrings("%MOLDFLOW_PLUGIN_DIR%")
+    If p <> "" And p <> "%MOLDFLOW_PLUGIN_DIR%" And fso.FolderExists(p) Then
+        ResolvePluginDir = p
+        Exit Function
+    End If
+    userProfile = sh.ExpandEnvironmentStrings("%USERPROFILE%")
+    p = userProfile & "\Documents\MoldflowMobileSystem\plugin"
+    If fso.FolderExists(p) Then
+        ResolvePluginDir = p
+        Exit Function
+    End If
+    p = userProfile & "\Documents\MoldflowSynergyPlugin\MoldflowSynergyPlugin"
+    If fso.FolderExists(p) Then
+        ResolvePluginDir = p
+        Exit Function
+    End If
+    ResolvePluginDir = "C:\Users\UnoTEAM-0144\Documents\MoldflowMobileSystem\plugin"
+End Function
+PLUGIN_DIR = ResolvePluginDir()
 
 ' ============================================================================
 '  PER-SYNERGY-WINDOW SESSION IDENTITY

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import signal
 import sys
 import time
@@ -27,7 +28,7 @@ HERE = Path(__file__).resolve().parent
 CONFIG_PATH = HERE / "config.json"
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "existing_plugin_path": r"C:\Users\UnoTEAM-0144\Documents\MoldflowSynergyPlugin\MoldflowSynergyPlugin",
+    "existing_plugin_path": "",
     "poll_interval_seconds": 3.0,
     "startup_baseline": True,
     "inspection_enabled": True,
@@ -58,34 +59,48 @@ def configure_shared_plugin_path(config: dict[str, Any]) -> Path:
     """Add the existing production plugin directory to sys.path.
 
     This MUST happen before importing compute_jobs/mobile_reporter because
-    those modules intentionally live in the old plugin project and are reused
+    those modules intentionally live in the shared plugin directory and are reused
     rather than duplicated.
     """
     configured = str(config.get("existing_plugin_path") or "").strip()
-    if not configured:
-        raise RuntimeError(
-            "existing_plugin_path is not configured. Set it to the existing "
-            "MoldflowSynergyPlugin directory containing compute_jobs.py."
-        )
-
-    plugin_root = Path(configured).expanduser()
-    if not plugin_root.is_absolute():
-        plugin_root = (HERE / plugin_root).resolve()
-    else:
-        plugin_root = plugin_root.resolve()
-
-    if not plugin_root.is_dir():
-        raise FileNotFoundError(
-            f"Existing Moldflow plugin directory does not exist:\n{plugin_root}"
-        )
-
     required = ("compute_jobs.py", "mobile_reporter.py")
-    missing = [name for name in required if not (plugin_root / name).is_file()]
-    if missing:
+
+    candidates: list[Path] = []
+    if configured:
+        expanded = os.path.expandvars(os.path.expanduser(configured))
+        p = Path(expanded)
+        if not p.is_absolute():
+            p = (HERE / p).resolve()
+        else:
+            p = p.resolve()
+        candidates.append(p)
+
+    # Automatic fallbacks across multi-machine environments
+    env_dir = os.environ.get("MOLDFLOW_PLUGIN_DIR")
+    if env_dir:
+        candidates.append(Path(os.path.expandvars(env_dir)).resolve())
+
+    # Sibling plugin directory in current repo layout (HERE.parents[1] / 'plugin')
+    if len(HERE.parents) >= 2:
+        candidates.append((HERE.parents[1] / "plugin").resolve())
+
+    # User profile fallbacks
+    user_profile = os.environ.get("USERPROFILE")
+    if user_profile:
+        candidates.append((Path(user_profile) / "Documents" / "MoldflowMobileSystem" / "plugin").resolve())
+        candidates.append((Path(user_profile) / "Documents" / "MoldflowSynergyPlugin" / "MoldflowSynergyPlugin").resolve())
+
+    plugin_root = None
+    for cand in candidates:
+        if cand.is_dir() and all((cand / req).is_file() for req in required):
+            plugin_root = cand
+            break
+
+    if plugin_root is None:
+        checked = "\n".join(f"  - {c}" for c in candidates)
         raise FileNotFoundError(
-            "Existing Moldflow plugin directory is missing required module(s): "
-            + ", ".join(missing)
-            + f"\nDirectory: {plugin_root}"
+            "Could not locate a valid Moldflow plugin directory with required modules "
+            f"({', '.join(required)}).\nTried locations:\n{checked}"
         )
 
     path_text = str(plugin_root)

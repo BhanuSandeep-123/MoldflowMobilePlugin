@@ -2,16 +2,18 @@
 setlocal
 
 :: Canonical Moldflow Mobile System plugin Python
-set PYTHON_EXE=C:\Users\UnoTEAM-0144\Documents\MoldflowMobileSystem\plugin\.venv\Scripts\python.exe
+set PYTHON_EXE=%~dp0..\..\plugin\.venv\Scripts\python.exe
 
-:: Safe fallback to legacy environment if canonical is missing
-if not exist %PYTHON_EXE% (
-  set PYTHON_EXE=C:\Users\UnoTEAM-0144\Documents\MoldflowSynergyPlugin\MoldflowSynergyPlugin\.venv\Scripts\python.exe
+:: Dynamic fallbacks for other installations
+if not exist "%PYTHON_EXE%" (
+  set PYTHON_EXE=%USERPROFILE%\Documents\MoldflowMobileSystem\plugin\.venv\Scripts\python.exe
+)
+if not exist "%PYTHON_EXE%" (
+  set PYTHON_EXE=C:\Program Files\Python314\python.exe
 )
 
-if not exist %PYTHON_EXE% (
-  echo Moldflow plugin Python was not found:
-  echo %PYTHON_EXE%
+if not exist "%PYTHON_EXE%" (
+  echo Moldflow plugin Python was not found.
   pause
   exit /b 1
 )
