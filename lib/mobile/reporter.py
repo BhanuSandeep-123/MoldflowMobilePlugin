@@ -45,29 +45,42 @@ import urllib.request
 from pathlib import Path
 
 def _find_config_path():
-    """Resolve mobile_report_config.json robustly regardless of where this
+    r"""Resolve mobile_report_config.json robustly regardless of where this
     module is installed.
 
     Resolution order:
       1. MOLDFLOW_CONFIG environment variable (full path to .json file).
-      2. repo/plugin/mobile_report_config.json (when running from repository).
-      3. Walk up from this file's directory, checking each level for
-         plugin/mobile_report_config.json or mobile_report_config.json.
-      4. Fallback: beside this file (original behavior for plugin/ layout).
+      2. %PROGRAMDATA%\MoldflowMobile\config.json (production workstation target).
+      3. repo/plugin/mobile_report_config.json (when running from repository).
+      4. Walk up from this file's directory, checking each level for
+         plugin/mobile_report_config.json, mobile_report_config.json, or config.json.
+      5. Fallback: beside this file (original behavior for plugin/ layout).
     """
     import os
     env = os.environ.get("MOLDFLOW_CONFIG")
     if env:
         return Path(env)
+
+    # 2. Production system-wide configuration
+    prog_data = os.environ.get("PROGRAMDATA") or os.environ.get("ALLUSERSPROFILE")
+    if prog_data:
+        p = Path(prog_data) / "MoldflowMobile" / "config.json"
+        if p.exists():
+            return p
+
     here = Path(__file__).resolve().parent
     candidates = []
     if len(here.parents) >= 2:
         repo_root = here.parents[1]
         candidates.append(repo_root / "plugin" / "mobile_report_config.json")
         candidates.append(repo_root / "mobile_report_config.json")
+        candidates.append(repo_root / "config" / "mobile_report_config.json")
+        candidates.append(repo_root / "config" / "config.json")
     for directory in [here, here.parent, *here.parents]:
         candidates.append(directory / "plugin" / "mobile_report_config.json")
         candidates.append(directory / "mobile_report_config.json")
+        candidates.append(directory / "config" / "mobile_report_config.json")
+        candidates.append(directory / "config" / "config.json")
     for candidate in candidates:
         if candidate.exists():
             return candidate
@@ -95,12 +108,13 @@ _last_sent = {}          # job_id -> (status, percent_bucket, sent_at)
 
 
 def _load_config():
-    global _config, _config_loaded
+    global _config, _config_loaded, CONFIG_PATH
     if _config_loaded:
         return _config
     _config_loaded = True
     _config = None
     try:
+        CONFIG_PATH = _find_config_path()
         if CONFIG_PATH.exists():
             data = json.loads(CONFIG_PATH.read_text(encoding="utf-8-sig"))
             if isinstance(data, dict):

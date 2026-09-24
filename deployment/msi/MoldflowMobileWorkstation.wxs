@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  
+  <Package Name="Moldflow Mobile Workstation Runtime"
+           Manufacturer="Autodesk Moldflow Mobile"
+           Version="1.0.0.0"
+           UpgradeCode="B91A4CFE-7963-4DC1-92A3-316DAA8A86C1"
+           Scope="perMachine"
+           Language="1033">
+    
+    <SummaryInformation Description="Moldflow Mobile Workstation Runtime Agent and Background Monitor"
+                        Keywords="Moldflow, Mobile, Workstation, Agent, SCM" />
+
+    <!-- Upgrade / Reinstall Strategy: Preserve config and handle tasks cleanly -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Moldflow Mobile Workstation Runtime is already installed."
+                  Schedule="afterInstallInitialize" />
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- UI Customization -->
+    <WixVariable Id="WixUILicenseRtf" Value="deployment\msi\LICENSE.rtf" />
+    <ui:WixUI Id="WixUI_Minimal" />
+
+    <!-- IT Deployment Configuration Properties -->
+    <Property Id="BACKEND_URL" Value="https://moldflowplugin-mobile-app.onrender.com" Secure="yes" />
+    <Property Id="USER_ID" Value="DEV-USER-001" Secure="yes" />
+    <Property Id="ENROLLMENT_TOKEN" Secure="yes" />
+    <Property Id="ENROLLMENT_TOKEN_FILE" Secure="yes" />
+    <Property Id="MACHINE_ID" Secure="yes" />
+    <Property Id="MACHINE_NAME" Secure="yes" />
+    <Property Id="FORCE_REENROLL" Value="0" Secure="yes" />
+    <Property Id="SKIP_SYNERGY_COMMAND" Value="0" Secure="yes" />
+    <Property Id="SKIP_TASKS" Value="0" Secure="yes" />
+    <Property Id="ARPHELPLINK" Value="https://moldflowplugin-mobile-app.onrender.com" />
+    <Property Id="ARPNOREPAIR" Value="yes" Secure="yes" />
+
+    <!-- Target Directory Structure -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="MoldflowMobileWorkstation" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="PROGRAMDATAFOLDER" Name="MoldflowMobile">
+        <Directory Id="LOGSFOLDER" Name="logs" />
+        <Directory Id="INSPECTIONFOLDER" Name="inspection_results" />
+      </Directory>
+    </StandardDirectory>
+
+    <!-- ProgramData Directory Creation & Component Registration -->
+    <Component Id="C_ProgramDataDirectories" Directory="PROGRAMDATAFOLDER" Guid="6A4F23D1-E8B2-4A73-A89E-758CEB44D520">
+      <CreateFolder Directory="PROGRAMDATAFOLDER" />
+      <CreateFolder Directory="LOGSFOLDER" />
+      <CreateFolder Directory="INSPECTIONFOLDER" />
+    </Component>
+
+    <!-- Workstation Runtime Feature -->
+    <Feature Id="WorkstationRuntimeFeature"
+             Title="Moldflow Mobile Workstation Runtime"
+             Description="Installs clean runtime files, Post-Analyze Agent, and Job Monitor"
+             Level="1"
+             AllowAbsent="no">
+      <ComponentRef Id="C_ProgramDataDirectories" />
+      <Files Include="$(var.StagingDir)\**" Directory="INSTALLFOLDER" />
+    </Feature>
+
+    <!-- Custom Actions: Background Execution & Configuration Management -->
+    <CustomAction Id="RunInstallWorkstationCA"
+                  Directory="INSTALLFOLDER"
+                  Execute="deferred"
+                  Impersonate="no"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '[INSTALLFOLDER]installer\Install-MoldflowWorkstation.ps1' -InstallDir '[INSTALLFOLDER]' -BackendUrl '[BACKEND_URL]' -UserId '[USER_ID]' -EnrollmentToken '[ENROLLMENT_TOKEN]' -EnrollmentTokenFile '[ENROLLMENT_TOKEN_FILE]' -MachineId '[MACHINE_ID]' -MachineName '[MACHINE_NAME]' -SkipFileCopy -Silent&quot;"
+                  Return="check" />
+
+    <CustomAction Id="RunUninstallWorkstationCA"
+                  Directory="INSTALLFOLDER"
+                  Execute="deferred"
+                  Impersonate="no"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; '[INSTALLFOLDER]installer\Uninstall-MoldflowWorkstation.ps1' -InstallDir '[INSTALLFOLDER]' -SkipFileDelete -Silent&quot;"
+                  Return="ignore" />
+
+    <!-- Installation Sequence -->
+    <InstallExecuteSequence>
+      <Custom Action="RunUninstallWorkstationCA"
+              Before="RemoveFiles"
+              Condition="(REMOVE=&quot;ALL&quot;) AND (NOT UPGRADINGPRODUCTCODE)" />
+      
+      <Custom Action="RunInstallWorkstationCA"
+              After="InstallFiles"
+              Condition="NOT (REMOVE=&quot;ALL&quot;)" />
+    </InstallExecuteSequence>
+
+  </Package>
+</Wix>

@@ -90,3 +90,8 @@ Export the results with parameters corresponding to screenshots and their inform
 **Date:** 18,21,22-09-2026
 *Working on exploration of network license server on multiple systems how to connect with mobile dashboard for different user with same network license. Currently integrating license section in the mobile App.
 
+**Date:** 23,24-09-2026
+*Working on exploration of network license server on multiple systems how to connect with mobile dashboard for different user with same network license. Currently integrating license section in the mobile App.
+*Build a **Workstation Agent** that users can install on their systems. The agent should run in the background, connect the workstation to the **Network License monitoring system**, and continuously send the workstation's connection and license status to the backend. The backend should process this information and send **push notifications** to the mobile application whenever there are important status changes. The mobile app should display the connected workstations along with their current **network license and connection status**, allowing users to monitor the system remotely.
+
+

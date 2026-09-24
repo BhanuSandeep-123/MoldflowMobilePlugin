@@ -40,6 +40,11 @@ public partial class JobsPage : ContentPage
     private DateTime _customFilterDate = DateTime.Today;
     private StatusFilterMode _statusFilter = StatusFilterMode.All;
 
+    private const string AllWorkstationsOption = "All Workstations";
+    private string _selectedWorkstation = AllWorkstationsOption;
+    private List<string> _availableWorkstations = new() { AllWorkstationsOption };
+    private bool _isUpdatingWorkstationPicker;
+
     // Bound to JobsCollectionView ONCE and updated in place (see
     // SyncDisplayedJobs) rather than reassigned on every poll -- replacing
     // ItemsSource wholesale is what was resetting the user's scroll
@@ -59,6 +64,9 @@ public partial class JobsPage : ContentPage
 
         CalendarDatePicker.Date = DateTime.Today;
 
+        WorkstationPicker.ItemsSource = _availableWorkstations;
+        WorkstationPicker.SelectedIndex = 0;
+
         UpdateFilterButtonStyles();
         UpdateSummaryCardStyles();
     }
@@ -71,10 +79,40 @@ public partial class JobsPage : ContentPage
     {
         base.OnAppearing();
 
+#if ANDROID
+        _ = EnsureDeviceRegisteredAsync();
+#endif
+
         await LoadJobsAsync(showLoading: true);
 
         StartPolling();
     }
+
+#if ANDROID
+    private async Task EnsureDeviceRegisteredAsync()
+    {
+        try
+        {
+            var token = Plugin.FirebasePushNotifications.IFirebasePushNotification.Current?.Token
+                ?? Preferences.Default.Get<string?>("pending_fcm_token", null);
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                var registeredToken = Preferences.Default.Get<string?>("registered_fcm_token", null);
+                if (registeredToken != token)
+                {
+                    await _apiService.RegisterDeviceAsync(token);
+                    Preferences.Default.Set("registered_fcm_token", token);
+                    System.Diagnostics.Debug.WriteLine($"JobsPage registered device token: {token}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"JobsPage device registration error: {ex}");
+        }
+    }
+#endif
 
     // =========================================================
     // PAGE DISAPPEARING
@@ -112,6 +150,7 @@ public partial class JobsPage : ContentPage
             if (jobs == null)
             {
                 _allJobs = new List<Job>();
+                UpdateAvailableWorkstations();
                 SyncDisplayedJobs(_allJobs);
                 JobCountLabel.Text = "0 jobs";
                 UpdateSummaryCounts();
@@ -123,6 +162,7 @@ public partial class JobsPage : ContentPage
             // and filters within that already-authorized set.
             _allJobs = jobs;
 
+            UpdateAvailableWorkstations();
             UpdateSummaryCounts();
             ApplyFiltersAndDisplay();
         }
@@ -255,16 +295,22 @@ public partial class JobsPage : ContentPage
 
     private void UpdateSummaryCounts()
     {
-        var active = _allJobs.Count(j => j.IsRunning || j.IsQueued);
-        var completed = _allJobs.Count(j => j.IsCompleted);
-        var canceled = _allJobs.Count(j => j.IsCanceled);
-        var failed = _allJobs.Count(j => j.IsFailed);
+        var scoped = (!string.IsNullOrWhiteSpace(_selectedWorkstation) &&
+                      !string.Equals(_selectedWorkstation, AllWorkstationsOption, StringComparison.OrdinalIgnoreCase))
+            ? _allJobs.Where(j => string.Equals(j.MachineId, _selectedWorkstation, StringComparison.OrdinalIgnoreCase))
+            : _allJobs;
+
+        var active = scoped.Count(j => j.IsRunning || j.IsQueued);
+        var completed = scoped.Count(j => j.IsCompleted);
+        var canceled = scoped.Count(j => j.IsCanceled);
+        var failed = scoped.Count(j => j.IsFailed);
+        var overall = scoped.Count();
 
         ActiveCountLabel.Text = active.ToString();
         CompletedCountLabel.Text = completed.ToString();
         CanceledCountLabel.Text = canceled.ToString();
         FailedCountLabel.Text = failed.ToString();
-        OverallCountLabel.Text = _allJobs.Count.ToString();
+        OverallCountLabel.Text = overall.ToString();
     }
 
     // =========================================================
@@ -325,6 +371,12 @@ public partial class JobsPage : ContentPage
             _ => filtered
         };
 
+        if (!string.IsNullOrWhiteSpace(_selectedWorkstation) &&
+            !string.Equals(_selectedWorkstation, AllWorkstationsOption, StringComparison.OrdinalIgnoreCase))
+        {
+            filtered = filtered.Where(j => string.Equals(j.MachineId, _selectedWorkstation, StringComparison.OrdinalIgnoreCase));
+        }
+
         var result = filtered.ToList();
 
         SyncDisplayedJobs(result);
@@ -346,8 +398,75 @@ public partial class JobsPage : ContentPage
             _ => string.Empty
         };
 
+        var machineSuffix = (!string.IsNullOrWhiteSpace(_selectedWorkstation) &&
+                             !string.Equals(_selectedWorkstation, AllWorkstationsOption, StringComparison.OrdinalIgnoreCase))
+            ? $" · {_selectedWorkstation}"
+            : string.Empty;
+
         JobCountLabel.Text =
-            $"{result.Count} job{(result.Count == 1 ? "" : "s")}{statusSuffix}{dateSuffix}";
+            $"{result.Count} job{(result.Count == 1 ? "" : "s")}{statusSuffix}{dateSuffix}{machineSuffix}";
+    }
+
+    // =========================================================
+    // WORKSTATION FILTER & PICKER
+    // =========================================================
+
+    private void UpdateAvailableWorkstations()
+    {
+        var distinctMachines = _allJobs
+            .Select(j => j.MachineId)
+            .Where(m => !string.IsNullOrWhiteSpace(m))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(m => m)
+            .ToList();
+
+        var newList = new List<string> { AllWorkstationsOption };
+        newList.AddRange(distinctMachines);
+
+        if (!_availableWorkstations.SequenceEqual(newList, StringComparer.OrdinalIgnoreCase))
+        {
+            _isUpdatingWorkstationPicker = true;
+            try
+            {
+                _availableWorkstations = newList;
+                WorkstationPicker.ItemsSource = _availableWorkstations;
+
+                var selectedIndex = _availableWorkstations.FindIndex(m =>
+                    string.Equals(m, _selectedWorkstation, StringComparison.OrdinalIgnoreCase));
+
+                if (selectedIndex >= 0)
+                {
+                    WorkstationPicker.SelectedIndex = selectedIndex;
+                }
+                else
+                {
+                    _selectedWorkstation = AllWorkstationsOption;
+                    WorkstationPicker.SelectedIndex = 0;
+                }
+            }
+            finally
+            {
+                _isUpdatingWorkstationPicker = false;
+            }
+        }
+    }
+
+    private void OnWorkstationPickerChanged(object? sender, EventArgs e)
+    {
+        if (_isUpdatingWorkstationPicker)
+            return;
+
+        if (WorkstationPicker.SelectedItem is string selected && !string.IsNullOrWhiteSpace(selected))
+        {
+            _selectedWorkstation = selected;
+        }
+        else
+        {
+            _selectedWorkstation = AllWorkstationsOption;
+        }
+
+        UpdateSummaryCounts();
+        ApplyFiltersAndDisplay();
     }
 
     // Updates _displayedJobs in place instead of replacing ItemsSource, so
@@ -476,6 +595,7 @@ public partial class JobsPage : ContentPage
         if (success)
         {
             _allJobs = _allJobs.Where(j => j.JobId != job.JobId).ToList();
+            UpdateAvailableWorkstations();
             UpdateSummaryCounts();
             ApplyFiltersAndDisplay();
         }

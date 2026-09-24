@@ -54,12 +54,17 @@ try {
 # 4. Register Scheduled Task using dynamic current user principal
 $UserPrincipal = "$env:USERDOMAIN\$env:USERNAME"
 $Trigger = New-ScheduledTaskTrigger -AtLogOn -User $UserPrincipal
+$Repeat = (New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 1))
+$Trigger.Repetition = $Repeat.Repetition
+
 $Action = New-ScheduledTaskAction -Execute $PythonExe -Argument "agent.py" -WorkingDirectory $WorkingDir
 $Settings = New-ScheduledTaskSettingsSet `
     -MultipleInstances IgnoreNew `
     -AllowStartIfOnBatteries `
     -DontStopIfGoingOnBatteries `
     -StartWhenAvailable `
+    -RestartCount 3 `
+    -RestartInterval (New-TimeSpan -Minutes 1) `
     -ExecutionTimeLimit ([TimeSpan]::Zero)
 $Principal = New-ScheduledTaskPrincipal -UserId $UserPrincipal -LogonType Interactive
 

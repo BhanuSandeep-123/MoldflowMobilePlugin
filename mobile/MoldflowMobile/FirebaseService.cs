@@ -6,7 +6,37 @@ namespace MoldflowMobile;
 
 public class FirebaseService
 {
-    public string? FcmToken { get; private set; }
+    private string? _fcmToken;
+    public string? FcmToken
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(_fcmToken))
+                return _fcmToken;
+
+            try
+            {
+                var currentToken = IFirebasePushNotification.Current?.Token;
+                if (!string.IsNullOrWhiteSpace(currentToken))
+                {
+                    _fcmToken = currentToken;
+                    return _fcmToken;
+                }
+            }
+            catch
+            {
+            }
+
+            var cached = Preferences.Default.Get<string?>("pending_fcm_token", null);
+            if (!string.IsNullOrWhiteSpace(cached))
+            {
+                return cached;
+            }
+
+            return null;
+        }
+        private set => _fcmToken = value;
+    }
 
     private bool _initialized;
     private bool _eventsSubscribed;
@@ -18,6 +48,25 @@ public class FirebaseService
     // new FirebaseService()
     public FirebaseService()
     {
+    }
+
+    public async Task<string?> WaitForTokenAsync(TimeSpan timeout)
+    {
+        var token = FcmToken;
+        if (!string.IsNullOrWhiteSpace(token))
+            return token;
+
+        var start = DateTime.UtcNow;
+        while (DateTime.UtcNow - start < timeout)
+        {
+            token = FcmToken;
+            if (!string.IsNullOrWhiteSpace(token))
+                return token;
+
+            await Task.Delay(250);
+        }
+
+        return FcmToken;
     }
 
     public async Task InitializeAsync()
@@ -53,29 +102,40 @@ public class FirebaseService
             await firebase.RegisterForPushNotificationsAsync();
 
             // Check for token, retry briefly if initializing asynchronously
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 20; i++)
             {
-                FcmToken = firebase.Token;
-                if (!string.IsNullOrWhiteSpace(FcmToken))
+                var t = firebase.Token;
+                if (!string.IsNullOrWhiteSpace(t))
+                {
+                    FcmToken = t;
+                    Preferences.Default.Set("pending_fcm_token", t);
                     break;
+                }
                 await Task.Delay(250);
             }
 
             if (string.IsNullOrWhiteSpace(FcmToken))
             {
-                System.Diagnostics.Debug.WriteLine(
-                    "FCM token was not immediately available (will listen on TokenRefreshed).");
-
-                return;
+                var cached = Preferences.Default.Get<string?>("pending_fcm_token", null);
+                if (!string.IsNullOrWhiteSpace(cached))
+                {
+                    FcmToken = cached;
+                }
             }
 
-            System.Diagnostics.Debug.WriteLine(
-                "FCM token successfully obtained.");
-
-            System.Diagnostics.Debug.WriteLine(
-                $"FCM token length: {FcmToken.Length}");
-
-            _initialized = true;
+            if (!string.IsNullOrWhiteSpace(FcmToken))
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "FCM token successfully obtained.");
+                System.Diagnostics.Debug.WriteLine(
+                    $"FCM token length: {FcmToken.Length}");
+                _initialized = true;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "FCM token was not immediately available (will listen on TokenRefreshed).");
+            }
         }
         catch (Exception ex)
         {
@@ -240,6 +300,7 @@ public class FirebaseService
             if (!string.IsNullOrWhiteSpace(e.Token))
             {
                 FcmToken = e.Token;
+                Preferences.Default.Set("pending_fcm_token", e.Token);
                 System.Diagnostics.Debug.WriteLine($"FCM token refreshed: {FcmToken}");
                 TokenRefreshed?.Invoke(this, e.Token);
             }

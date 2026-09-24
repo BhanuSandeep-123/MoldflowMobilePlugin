@@ -38,11 +38,17 @@ Option Explicit
 Dim PLUGIN_DIR
 Function ResolvePluginDir()
     On Error Resume Next
-    Dim sh, fso, p, userProfile
+    Dim sh, fso, p, userProfile, progFiles
     Set sh = CreateObject("WScript.Shell")
     Set fso = CreateObject("Scripting.FileSystemObject")
     p = sh.ExpandEnvironmentStrings("%MOLDFLOW_PLUGIN_DIR%")
     If p <> "" And p <> "%MOLDFLOW_PLUGIN_DIR%" And fso.FolderExists(p) Then
+        ResolvePluginDir = p
+        Exit Function
+    End If
+    progFiles = sh.ExpandEnvironmentStrings("%ProgramFiles%")
+    p = progFiles & "\MoldflowMobileWorkstation\plugin"
+    If fso.FolderExists(p) Then
         ResolvePluginDir = p
         Exit Function
     End If
@@ -239,7 +245,13 @@ Sub EnsureAssistantPanelVisible()
 End Sub
 
 Function ResolvePythonExe(fso)
-    Dim exe
+    Dim exe, installRoot
+    installRoot = fso.GetParentFolderName(PLUGIN_DIR)
+    exe = installRoot & "\bin\python.exe"
+    If fso.FileExists(exe) Then
+        ResolvePythonExe = exe
+        Exit Function
+    End If
     exe = PLUGIN_DIR & "\.venv\Scripts\python.exe"
     If fso.FileExists(exe) Then
         ResolvePythonExe = exe
@@ -363,7 +375,14 @@ Sub Main()
     If monitorAlreadyRunning Then
         LogMsg "Standalone job monitor already running -- not launching another instance."
     Else
-        monitorScriptPath = PLUGIN_DIR & "\standalone_job_monitor.py"
+        Dim monPath1, monPath2
+        monPath1 = PLUGIN_DIR & "\standalone_job_monitor.py"
+        monPath2 = fso.GetParentFolderName(PLUGIN_DIR) & "\monitor\standalone_job_monitor.py"
+        If fso.FileExists(monPath2) Then
+            monitorScriptPath = monPath2
+        Else
+            monitorScriptPath = monPath1
+        End If
         monitorCmd = """" & pyExe & """ """ & monitorScriptPath & """"
         LogMsg "Launching standalone job monitor: " & monitorCmd
         wshShell.Run monitorCmd, 0, False

@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 #if ANDROID
+using Android.App;
 using Plugin.FirebasePushNotifications;
+using Plugin.FirebasePushNotifications.Model;
 using Plugin.FirebasePushNotifications.Model.Queues;
+using Plugin.FirebasePushNotifications.Platforms.Channels;
 #endif
 
 namespace MoldflowMobile;
@@ -21,6 +24,15 @@ public static class MauiProgram
                 // Keep notification-open information available when the
                 // application is launched from a notification tap.
                 options.QueueFactory = new PersistentQueueFactory();
+                options.Android.NotificationChannels = new[]
+                {
+                    new NotificationChannelRequest
+                    {
+                        ChannelId = "moldflow_jobs",
+                        ChannelName = "Moldflow Analysis Alerts",
+                        Importance = NotificationImportance.High
+                    }
+                };
             })
 #else
         builder

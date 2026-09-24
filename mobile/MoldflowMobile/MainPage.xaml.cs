@@ -68,11 +68,23 @@ public partial class MainPage : ContentPage
                     await _firebaseInitializationTask;
                 }
 
-                if (_firebaseService != null && !string.IsNullOrWhiteSpace(_firebaseService.FcmToken))
+                if (_firebaseService != null)
                 {
                     try
                     {
-                        await _apiService.RegisterDeviceAsync(_firebaseService.FcmToken);
+                        var tokenToRegister = await _firebaseService.WaitForTokenAsync(TimeSpan.FromSeconds(5))
+                            ?? Preferences.Default.Get<string?>("pending_fcm_token", null);
+
+                        if (!string.IsNullOrWhiteSpace(tokenToRegister))
+                        {
+                            await _apiService.RegisterDeviceAsync(tokenToRegister);
+                            Preferences.Default.Set("registered_fcm_token", tokenToRegister);
+                            System.Diagnostics.Debug.WriteLine("Device registration on auto-login succeeded.");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("FCM token was not available on auto-login.");
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -126,10 +138,12 @@ public partial class MainPage : ContentPage
                 {
                     try
                     {
+                        Preferences.Default.Set("pending_fcm_token", token);
                         var jwt = _apiService.GetToken() ?? await _apiService.GetSavedTokenAsync();
                         if (!string.IsNullOrWhiteSpace(jwt))
                         {
                             await _apiService.RegisterDeviceAsync(token);
+                            Preferences.Default.Set("registered_fcm_token", token);
                             System.Diagnostics.Debug.WriteLine("FCM token registered on TokenRefreshed.");
                         }
                     }
@@ -284,17 +298,23 @@ public partial class MainPage : ContentPage
             // 3. Register FCM token with backend
             // -------------------------------------------------
 
-            if (_firebaseService != null &&
-                !string.IsNullOrWhiteSpace(
-                    _firebaseService.FcmToken))
+            if (_firebaseService != null)
             {
                 try
                 {
-                    await _apiService.RegisterDeviceAsync(
-                        _firebaseService.FcmToken);
+                    var tokenToRegister = await _firebaseService.WaitForTokenAsync(TimeSpan.FromSeconds(5))
+                        ?? Preferences.Default.Get<string?>("pending_fcm_token", null);
 
-                    System.Diagnostics.Debug.WriteLine(
-                        "Device registration completed.");
+                    if (!string.IsNullOrWhiteSpace(tokenToRegister))
+                    {
+                        await _apiService.RegisterDeviceAsync(tokenToRegister);
+                        Preferences.Default.Set("registered_fcm_token", tokenToRegister);
+                        System.Diagnostics.Debug.WriteLine("Device registration completed.");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("FCM token is not available after waiting.");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -303,11 +323,6 @@ public partial class MainPage : ContentPage
                     System.Diagnostics.Debug.WriteLine(
                         $"Device registration failed: {ex}");
                 }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    "FCM token is not available.");
             }
 
 #endif

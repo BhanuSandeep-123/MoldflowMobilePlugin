@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
 CONFIG_PATH = HERE / "config.json"
 
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -82,7 +84,16 @@ def configure_shared_plugin_path(config: dict[str, Any]) -> Path:
 
     # Sibling plugin directory in current repo layout (HERE.parents[1] / 'plugin')
     if len(HERE.parents) >= 2:
-        candidates.append((HERE.parents[1] / "plugin").resolve())
+        root_dir = HERE.parents[1].resolve()
+        candidates.append((root_dir / "plugin").resolve())
+        root_text = str(root_dir)
+        if root_text not in sys.path:
+            sys.path.insert(0, root_text)
+
+    # Target production installation path
+    prog_files = os.environ.get("ProgramFiles")
+    if prog_files:
+        candidates.append((Path(prog_files) / "MoldflowMobileWorkstation" / "plugin").resolve())
 
     # User profile fallbacks
     user_profile = os.environ.get("USERPROFILE")
@@ -131,8 +142,8 @@ def import_shared_modules(plugin_root: Path):
 
 
 class StandaloneAgent:
-    def __init__(self) -> None:
-        self.config = load_config()
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
+        self.config = config if config is not None else load_config()
         self.plugin_root = configure_shared_plugin_path(self.config)
         self.compute_jobs, self.mobile_reporter = import_shared_modules(self.plugin_root)
 
@@ -156,25 +167,71 @@ class StandaloneAgent:
         self.active: dict[str, dict[str, Any]] = {}
 
     def _configure_logging(self) -> logging.Logger:
-        log_path = Path(str(self.config.get("log_file") or "standalone_agent.log"))
-        if not log_path.is_absolute():
-            log_path = HERE / log_path
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-
         logger = logging.getLogger("MoldflowStandaloneAgent")
         logger.setLevel(logging.INFO)
         logger.propagate = False
 
-        # Avoid duplicate handlers if an embedding process constructs the
-        # agent more than once.
         if not logger.handlers:
             formatter = logging.Formatter("[%(asctime)s] %(levelname)s %(message)s")
-            file_handler = logging.FileHandler(log_path, encoding="utf-8")
-            file_handler.setFormatter(formatter)
-            stream_handler = logging.StreamHandler(sys.stdout)
-            stream_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-            logger.addHandler(stream_handler)
+            configured = self.config.get("log_file")
+
+            candidates: list[Path] = []
+            if configured and Path(str(configured)).is_absolute():
+                candidates.append(Path(str(configured)))
+            else:
+                log_name = Path(str(configured)).name if configured else "standalone_agent.log"
+                if not log_name.endswith(".log"):
+                    log_name = f"{log_name}.log"
+
+                # Check if running from production Program Files
+                in_prog_files = False
+                try:
+                    for pf in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"), os.environ.get("ProgramW6432")):
+                        if pf and HERE.resolve().is_relative_to(Path(pf).resolve()):
+                            in_prog_files = True
+                            break
+                except Exception:
+                    in_prog_files = "program files" in str(HERE).lower()
+
+                if in_prog_files:
+                    prog_data = os.environ.get("PROGRAMDATA") or os.environ.get("ALLUSERSPROFILE")
+                    if prog_data:
+                        candidates.append(Path(prog_data) / "MoldflowMobile" / "logs" / log_name)
+                    local_app = os.environ.get("LOCALAPPDATA") or os.environ.get("TEMP")
+                    if local_app:
+                        candidates.append(Path(local_app) / "MoldflowMobile" / "logs" / log_name)
+                else:
+                    candidates.append(HERE / log_name)
+                    prog_data = os.environ.get("PROGRAMDATA") or os.environ.get("ALLUSERSPROFILE")
+                    if prog_data:
+                        candidates.append(Path(prog_data) / "MoldflowMobile" / "logs" / log_name)
+                    local_app = os.environ.get("LOCALAPPDATA") or os.environ.get("TEMP")
+                    if local_app:
+                        candidates.append(Path(local_app) / "MoldflowMobile" / "logs" / log_name)
+
+            attached = False
+            for target_path in candidates:
+                try:
+                    target_path.parent.mkdir(parents=True, exist_ok=True)
+                    file_handler = logging.FileHandler(target_path, encoding="utf-8")
+                    file_handler.setFormatter(formatter)
+                    logger.addHandler(file_handler)
+                    attached = True
+                    break
+                except (PermissionError, OSError):
+                    continue
+
+            if not attached:
+                logger.addHandler(logging.NullHandler())
+
+            # Safely attach stream_handler only if stdout is available
+            if sys.stdout is not None and hasattr(sys.stdout, "write"):
+                try:
+                    stream_handler = logging.StreamHandler(sys.stdout)
+                    stream_handler.setFormatter(formatter)
+                    logger.addHandler(stream_handler)
+                except Exception:
+                    pass
 
         return logger
 
@@ -229,11 +286,31 @@ class StandaloneAgent:
             return False
 
     def _save_inspection(self, job_id: str, inspection: dict[str, Any]) -> None:
-        out = HERE / "inspection_results"
-        out.mkdir(parents=True, exist_ok=True)
-        path = out / f"{job_id}.json"
-        path.write_text(json.dumps(inspection, indent=2, default=str), encoding="utf-8")
-        self.log.info("Inspection result saved: %s", path)
+        in_prog_files = False
+        try:
+            for pf in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"), os.environ.get("ProgramW6432")):
+                if pf and HERE.resolve().is_relative_to(Path(pf).resolve()):
+                    in_prog_files = True
+                    break
+        except Exception:
+            in_prog_files = "program files" in str(HERE).lower()
+
+        if in_prog_files:
+            prog_data = os.environ.get("PROGRAMDATA") or os.environ.get("ALLUSERSPROFILE")
+            if prog_data:
+                out = Path(prog_data) / "MoldflowMobile" / "inspection_results"
+            else:
+                out = Path(os.environ.get("LOCALAPPDATA", os.environ.get("TEMP", "."))) / "MoldflowMobile" / "inspection_results"
+        else:
+            out = HERE / "inspection_results"
+
+        try:
+            out.mkdir(parents=True, exist_ok=True)
+            path = out / f"{job_id}.json"
+            path.write_text(json.dumps(inspection, indent=2, default=str), encoding="utf-8")
+            self.log.info("Inspection result saved: %s", path)
+        except Exception as exc:
+            self.log.warning("Could not save inspection result to %s: %s", out, exc)
 
     def _start_job(self, row: dict[str, Any]) -> None:
         job = self._job_payload(row)
